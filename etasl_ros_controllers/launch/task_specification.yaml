@@ -1,0 +1,3 @@
+etasl:
+  task_specificaton:
+    file: "/home/lars/ros/manulab_ws/src/etasl_ros_control/etasl_ros_controllers/scripts/example.lua"

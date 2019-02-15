@@ -7,6 +7,9 @@ set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(catkin REQUIRED COMPONENTS
+  expressiongraph_context
+  expressiongraph_context_lua
+  expressiongraph_solver_qpoases
   controller_interface
   dynamic_reconfigure
   geometry_msgs
@@ -33,6 +36,9 @@ find_package(Eigen3 REQUIRED)
 catkin_package(
   LIBRARIES etasl_ros_controllers
   CATKIN_DEPENDS
+    expressiongraph_context
+    expressiongraph_context_lua
+    expressiongraph_solver_qpoases
     controller_interface
     dynamic_reconfigure
     geometry_msgs

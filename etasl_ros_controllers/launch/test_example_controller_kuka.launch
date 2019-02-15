@@ -2,6 +2,8 @@
 <launch>
     <arg name="sim" default="true" />
 
+    <rosparam file="$(find etasl_ros_controllers)/launch/task_specification.yaml" command="load"/>
+
     <rosparam file="$(find kuka_rsi_hw_interface)/test/test_params_sim.yaml" command="load" if="$(arg sim)"/>
     <rosparam file="$(find kuka_rsi_hw_interface)/test/test_params.yaml" command="load" unless="$(arg sim)"/>
 

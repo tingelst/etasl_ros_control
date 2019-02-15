@@ -25,6 +25,11 @@
   <depend>realtime_tools</depend>
   <depend>roscpp</depend>
 
+  <depend>expressiongraph_lua</depend>
+  <depend>expressiongraph_context</depend>
+  <depend>expressiongraph_context_lua</depend>
+  <depend>expressiongraph_solver_qpoases</depend>
+
   <exec_depend>message_runtime</exec_depend>
 
   <export>
