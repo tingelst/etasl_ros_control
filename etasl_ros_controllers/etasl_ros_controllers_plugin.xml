@@ -1,0 +1,5 @@
+<library path="lib/libetasl_ros_controllers">
+    <class name="etasl_ros_controllers/ExampleController" type="etasl_ros_controllers::ExampleController" base_class_type="controller_interface::ControllerBase">
+        <description>A controller that executes an eTaSL task specification.</description>
+    </class>
+</library>

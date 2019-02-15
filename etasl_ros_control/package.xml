@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>etasl_ros_control</name>
+  <version>0.0.1</version>
+  <description>etasl_ros_control is a meta package for all etasl ros control packages</description>
+  <maintainer email="lars.tingelstad@ntnu.no">Lars Tingelstad</maintainer>
+  <license>LGPL-3.0</license>
+
+  <url type="repository">https://github.com/tingelst/etasl_ros_control</url>
+  <url type="bugtracker">https://github.com/tingelst/etasl_ros_control/issues</url>
+  <author>Lars Tingelstad</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <exec_depend>etasl_ros_controllers</exec_depend>
+
+  <export>
+    <metapackage />
+  </export>
+</package>
