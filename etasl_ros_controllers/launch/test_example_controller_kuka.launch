@@ -2,6 +2,8 @@
 <launch>
     <arg name="sim" default="true" />
 
+    <include file="$(find kuka_kr6_support)/launch/load_kr6r900sixx.launch" />
+
     <rosparam file="$(find etasl_ros_controllers)/launch/task_specification.yaml" command="load"/>
 
     <rosparam file="$(find kuka_rsi_hw_interface)/test/test_params_sim.yaml" command="load" if="$(arg sim)"/>

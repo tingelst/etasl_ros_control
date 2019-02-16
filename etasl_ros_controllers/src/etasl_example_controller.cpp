@@ -20,14 +20,13 @@ bool ExampleController::init(hardware_interface::RobotHW* robot_hardware, ros::N
     ROS_ERROR("ExampleController: Error getting position joint interface from hardware!");
     return false;
   }
-  std::vector<std::string> joint_names;
-  if (!node_handle.getParam("/controller_joint_names", joint_names))
+  if (!node_handle.getParam("/controller_joint_names", joint_names_))
   {
     ROS_ERROR("ExampleController: Could not parse joint names");
   }
-  if (joint_names.size() != 6)
+  if (joint_names_.size() != 6)
   {
-    ROS_ERROR_STREAM("ExampleController: Wrong number of joint names, got " << joint_names.size() << " instead of 6 names!");
+    ROS_ERROR_STREAM("ExampleController: Wrong number of joint names, got " << joint_names_.size() << " instead of 6 names!");
     return false;
   }
   position_joint_handles_.resize(6);
@@ -35,7 +34,7 @@ bool ExampleController::init(hardware_interface::RobotHW* robot_hardware, ros::N
   {
     try
     {
-      position_joint_handles_[i] = position_joint_interface_->getHandle(joint_names[i]);
+      position_joint_handles_[i] = position_joint_interface_->getHandle(joint_names_[i]);
     }
     catch (const hardware_interface::HardwareInterfaceException& e)
     {
@@ -44,14 +43,12 @@ bool ExampleController::init(hardware_interface::RobotHW* robot_hardware, ros::N
     }
   }
 
-  std::string task_specification_filename;
-  if (!node_handle.getParam("/etasl/task_specificaton/file", task_specification_filename))
+  if (!node_handle.getParam("/etasl/task_specificaton/file", task_specification_filename_))
   {
     ROS_ERROR("ExampleController: Could not find task specification filename");
   }
 
   etasl_ = boost::make_shared<EtaslDriver>(300, 0.0, 0.0001);
-  etasl_->readTaskSpecificationFile(task_specification_filename);
 
   return true;
 }
@@ -60,19 +57,42 @@ void ExampleController::starting(const ros::Time& /* time */)
 {
   for (size_t i = 0; i < 6; ++i)
   {
-    initial_pose_[i] = position_joint_handles_[i].getPosition();
+    initial_pos_[i] = position_joint_handles_[i].getPosition();
   }
   elapsed_time_ = ros::Duration(0.0);
+
+  etasl_->readTaskSpecificationFile(task_specification_filename_);
+
+  DoubleMap initial_position_map;
+  std::transform(joint_names_.begin(), joint_names_.end(), initial_pos_.begin(), std::inserter(initial_position_map, initial_position_map.end()),
+                 [](std::string a, double b) { return std::make_pair(a, b); });
+
+  DoubleMap converged_values_map;
+  etasl_->initialize(initial_position_map, 3.0, 0.004, 1E-4, converged_values_map);
 }
 
 void ExampleController::update(const ros::Time& /*time*/, const ros::Duration& period)
 {
   elapsed_time_ += period;
 
-  double delta_angle = M_PI / 16 * (1 - std::cos(M_PI / 5.0 * elapsed_time_.toSec())) * 0.2;
+  std::array<double, 6> position;
   for (size_t i = 0; i < 6; ++i)
   {
-    position_joint_handles_[i].setCommand(initial_pose_[i] + delta_angle);
+    position[i] = position_joint_handles_[i].getPosition();
+  }
+
+  DoubleMap position_map;
+  std::transform(joint_names_.begin(), joint_names_.end(), position.begin(), std::inserter(position_map, position_map.end()),
+                 [](std::string a, double b) { return std::make_pair(a, b); });
+
+  etasl_->setJointPos(position_map);
+  etasl_->solve();
+  DoubleMap velocity_map;
+  etasl_->getJointVel(velocity_map);
+
+  for (size_t i = 0; i < 6; ++i)
+  {
+    position_joint_handles_[i].setCommand(position[i] + velocity_map[joint_names_[i]] * period.toSec());
   }
 }
 
