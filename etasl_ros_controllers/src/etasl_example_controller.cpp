@@ -27,8 +27,7 @@ bool ExampleController::init(hardware_interface::RobotHW* robot_hardware, ros::N
   }
   if (joint_names.size() != 6)
   {
-    ROS_ERROR_STREAM("ExampleController: Wrong number of joint names, got " << joint_names.size()
-                                                                            << " instead of 6 names!");
+    ROS_ERROR_STREAM("ExampleController: Wrong number of joint names, got " << joint_names.size() << " instead of 6 names!");
     return false;
   }
   position_joint_handles_.resize(6);
@@ -45,85 +44,15 @@ bool ExampleController::init(hardware_interface::RobotHW* robot_hardware, ros::N
     }
   }
 
-  //   std::array<double, 7> q_start{ { 0, -M_PI_4, 0, -3 * M_PI_4, 0, M_PI_2, M_PI_4 } };
-  //   for (size_t i = 0; i < q_start.size(); i++)
-  //   {
-  //     if (std::abs(position_joint_handles_[i].getPosition() - q_start[i]) > 0.1)
-  //     {
-  //       ROS_ERROR_STREAM("JointPositionExampleController: Robot is not in the expected starting position for "
-  //                        "running this example. Run `roslaunch franka_example_controllers move_to_start.launch "
-  //                        "robot_ip:=<robot-ip> load_gripper:=<has-attached-gripper>` first.");
-  //       return false;
-  //     }
-  //   }
-
-  ctx_ = create_context();
-  ctx_->addType("robot");
-  ctx_->addType("feature");
-
-  lua_ctx_ = boost::make_shared<LuaContext>();
-  lua_ctx_->initContext(ctx_);
-
   std::string task_specification_filename;
   if (!node_handle.getParam("/etasl/task_specificaton/file", task_specification_filename))
   {
     ROS_ERROR("ExampleController: Could not find task specification filename");
   }
-  if (lua_ctx_->executeFile(task_specification_filename) != 0)
-  {
-    ROS_ERROR_STREAM("ExampleController: Could not load task specification from file");
-    return false;
-  }
-  else
-  {
-    ROS_INFO_STREAM("ExampleController: Loaded task specification");
-  }
 
-  double max_iterations = floor(ctx_->getSolverProperty("max_iterations", 300));
-  double max_cpu_time = ctx_->getSolverProperty("max_cpu_time", 0.0);
-  double sample_time = ctx_->getSolverProperty("sample_time", 0.01);
-  double regularization = ctx_->getSolverProperty("regularization", 1E-4);
-  double initialization_time = ctx_->getSolverProperty("initialization_time", 3);
+  etasl_ = boost::make_shared<EtaslDriver>(300, 0.0, 0.0001);
+  etasl_->readTaskSpecificationFile(task_specification_filename);
 
-  solver_ = boost::make_shared<qpOASESSolver>(max_iterations, max_cpu_time, regularization);
-
-  return true;
-}
-
-bool ExampleController::initializeFeatureVariables(Context::Ptr ctx, solver& solver, double initialization_time,
-                                                   double sample_time, double convergence_crit)
-{
-  // RTT::os::TimeService::ticks start_time = RTT::os::TimeService::Instance()->getTicks();
-  // initialization:
-  if (solver_->getNrOfFeatureStates() > 0)
-  {
-    ROS_INFO_STREAM("ExampleController: initialization started");
-    double t;
-    for (t = 0; t < initialization_time; t += sample_time)
-    {
-      int retval = solver_->updateStep(sample_time);
-      if (retval != 0)
-      {
-        ROS_ERROR_STREAM("ExampleController: Solver encountered the following error during initialization (t=" << t
-                                                                                                               << " )");
-        ROS_ERROR_STREAM(solver_->errorMessage(retval));
-        ROS_ERROR_STREAM(ctx_);
-        return false;
-      }
-      double norm_change = solver_->getNormChange() * sample_time;
-      ROS_INFO_STREAM("ExampleController: norm change: " << norm_change);
-      if (norm_change <= convergence_crit)
-      {
-        break;
-      }
-    }
-    // double elapsed = RTT::os::TimeService::Instance()->secondsSince(start_time);
-    // ROS_INFO_STREAM("ExampleController: Initialization time(" << ceil(t / sample_time) << "  iterations) : " <<
-    // elapsed
-    //                                                           << "[s]");
-  }
-  solver_->setInitialValues();  // sets the initial value fields of variables in the context.
-  // solver.printMatrices(std::cout);
   return true;
 }
 

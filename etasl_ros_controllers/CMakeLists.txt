@@ -50,6 +50,7 @@ catkin_package(
 )
 
 add_library(etasl_ros_controllers
+  src/etasl_driver.cpp
   src/etasl_example_controller.cpp
 )
 
