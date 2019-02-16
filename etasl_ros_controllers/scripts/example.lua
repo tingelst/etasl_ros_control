@@ -28,11 +28,19 @@ j4 = ctx:getScalarExpr(robot_joints[4])
 j5 = ctx:getScalarExpr(robot_joints[5])
 j6 = ctx:getScalarExpr(robot_joints[6])
 
+maxvel = 0.3
+for i = 1, #robot_joints do
+    BoxConstraint{
+        context = ctx,
+        var_name = robot_joints[i],
+        lower = -maxvel,
+        upper = maxvel
+    }
+end
+
 deg2rad = math.pi / 180.0
-
-trajectory = constant(-45 * deg2rad) + constant(20 * deg2rad) * sin(constant(1) * time)
-
 zeroval = constant(0.0)
+ninetydegrees = constant(90 * deg2rad)
 
 Constraint{
     context = ctx,
@@ -42,12 +50,12 @@ Constraint{
 Constraint{
     context = ctx,
     name = "joint_trajectory2",
-    expr = j2 - trajectory
+    expr = ninetydegrees + j2
 }
 Constraint{
     context = ctx,
     name = "joint_trajectory3",
-    expr = j3 - trajectory
+    expr = j3 - -constant(45 * deg2rad)
 }
 Constraint{
     context = ctx,
@@ -57,7 +65,7 @@ Constraint{
 Constraint{
     context = ctx,
     name = "joint_trajectory5",
-    expr = j5 - zeroval
+    expr = j5 - ninetydegrees
 }
 Constraint{
     context = ctx,
@@ -73,5 +81,5 @@ Constraint{
 --     expr = time
 -- }
 
-ctx:setOutputExpression("j2", j2)
-ctx:setOutputExpression("trajectory", trajectory)
+-- ctx:setOutputExpression("j2", j2)
+-- ctx:setOutputExpression("trajectory", trajectory)
