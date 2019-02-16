@@ -64,8 +64,7 @@ void ExampleController::starting(const ros::Time& /* time */)
   etasl_->readTaskSpecificationFile(task_specification_filename_);
 
   DoubleMap initial_position_map;
-  std::transform(joint_names_.begin(), joint_names_.end(), initial_pos_.begin(),
-                 std::inserter(initial_position_map, initial_position_map.end()),
+  std::transform(joint_names_.begin(), joint_names_.end(), initial_pos_.begin(), std::inserter(initial_position_map, initial_position_map.end()),
                  [](std::string a, double b) { return std::make_pair(a, b); });
 
   DoubleMap converged_values_map;
@@ -83,8 +82,7 @@ void ExampleController::update(const ros::Time& /*time*/, const ros::Duration& p
   }
 
   DoubleMap position_map;
-  std::transform(joint_names_.begin(), joint_names_.end(), position.begin(),
-                 std::inserter(position_map, position_map.end()),
+  std::transform(joint_names_.begin(), joint_names_.end(), position.begin(), std::inserter(position_map, position_map.end()),
                  [](std::string a, double b) { return std::make_pair(a, b); });
 
   etasl_->setJointPos(position_map);
