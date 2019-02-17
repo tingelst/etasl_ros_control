@@ -4,23 +4,26 @@
 
 namespace etasl_ros_controllers
 {
-bool EtaslDriver::initializeFeatureVariables(double initialization_time, double sample_time, double convergence_crit, DoubleMap& result)
+bool EtaslDriver::initializeFeatureVariables(double initialization_time, double sample_time, double convergence_crit,
+                                             DoubleMap& result)
 {
   // initialization:
-  if (slvr->getNrOfFeatureStates() > 0)
+  if (solver_->getNrOfFeatureStates() > 0)
   {
     double t;
     for (t = 0; t < initialization_time; t += sample_time)
     {
-      int retval = slvr->updateStep(sample_time);
+      int retval = solver_->updateStep(sample_time);
       if (retval != 0)
       {
-        ROS_ERROR_STREAM("initialize_feature_variables: solver encountered the following error during initialization (t=" << t << " )");
-        ROS_ERROR_STREAM(slvr->errorMessage(retval));
-        ROS_ERROR_STREAM(ctx);
+        ROS_ERROR_STREAM(
+            "initialize_feature_variables: solver encountered the following error during initialization (t=" << t
+                                                                                                             << " )");
+        ROS_ERROR_STREAM(solver_->errorMessage(retval));
+        ROS_ERROR_STREAM(ctx_);
         return false;
       }
-      double norm_change = slvr->getNormChange() * sample_time;
+      double norm_change = solver_->getNormChange() * sample_time;
       if (norm_change <= convergence_crit)
         break;
     }
@@ -35,24 +38,24 @@ bool EtaslDriver::initializeFeatureVariables(double initialization_time, double 
   {
     return true;
   }
-  // slvr->setInitialValues(); // sets the initial value fields of variables in the context.
+  // solver_->setInitialValues(); // sets the initial value fields of variables in the context.
 }
 
 EtaslDriver::EtaslDriver(int nWSR, double cputime, double regularization_factor)
 {
   /*ROS_INFO_STREAM( "constructor EtaslDriver" );*/
 
-  ctx = boost::make_shared<Context>();
-  ctx->addType("robot");
-  ctx->addType("feature");
-  time_ndx = ctx->getScalarNdx("time");
+  ctx_ = boost::make_shared<Context>();
+  ctx_->addType("robot");
+  ctx_->addType("feature");
+  time_ndx = ctx_->getScalarNdx("time");
   lua = boost::make_shared<LuaContext>();
-  lua->initContext(ctx);
+  lua->initContext(ctx_);
 
-  slvr = boost::make_shared<qpOASESSolver>(nWSR, cputime, regularization_factor);
+  solver_ = boost::make_shared<qpOASESSolver>(nWSR, cputime, regularization_factor);
 
-  //   obs = boost::make_shared<PythonObserver>(ctx);
-  //   ctx->addDefaultObserver(obs);
+  obs_ = create_default_observer(ctx_, "exit");
+  ctx_->addDefaultObserver(obs_);
 
   etaslread = false;
   initialized = false;
@@ -76,7 +79,7 @@ int EtaslDriver::setInput(const DoubleMap& dmap)
   for (DoubleMap::const_iterator it = dmap.begin(); it != dmap.end(); ++it)
   {
     // ROS_INFO_STREAM( it->first << "\t=\t" << it->second );
-    VariableType<double>::Ptr v = ctx->getInputChannel<double>(it->first);
+    VariableType<double>::Ptr v = ctx_->getInputChannel<double>(it->first);
     if (v)
     {
       v->setValue(it->second);
@@ -93,7 +96,7 @@ int EtaslDriver::setInputVelocity(const DoubleMap& dmap)
 {
   for (DoubleMap::const_iterator it = dmap.begin(); it != dmap.end(); ++it)
   {
-    VariableType<double>::Ptr v = ctx->getInputChannel<double>(it->first);
+    VariableType<double>::Ptr v = ctx_->getInputChannel<double>(it->first);
     if (v)
     {
       v->setJacobian(time_ndx, it->second);
@@ -111,30 +114,30 @@ int EtaslDriver::setJointPos(const DoubleMap& dmap)
   if (!initialized)
     return -1;
   int count = 0;
-  for (unsigned int i = 0; i < jnames.size(); ++i)
+  for (unsigned int i = 0; i < joint_names_.size(); ++i)
   {
-    DoubleMap::const_iterator e = dmap.find(jnames[i]);
+    DoubleMap::const_iterator e = dmap.find(joint_names_[i]);
     if (e != dmap.end())
     {
-      jvalues[i] = e->second;
+      joint_values_[i] = e->second;
       ++count;
     }
   }
-  for (unsigned int i = 0; i < fnames.size(); ++i)
+  for (unsigned int i = 0; i < feature_names_.size(); ++i)
   {
-    DoubleMap::const_iterator e = dmap.find(fnames[i]);
+    DoubleMap::const_iterator e = dmap.find(feature_names_[i]);
     if (e != dmap.end())
     {
-      fvalues[i] = e->second;
+      feature_values_[i] = e->second;
       ++count;
     }
   }
-  slvr->setJointStates(jvalues);
-  slvr->setFeatureStates(fvalues);
+  solver_->setJointStates(joint_values_);
+  solver_->setFeatureStates(feature_values_);
   DoubleMap::const_iterator e = dmap.find("time");
   if (e != dmap.end())
   {
-    slvr->setTime(e->second);
+    solver_->setTime(e->second);
     ++count;
   }
   return count;
@@ -144,22 +147,22 @@ int EtaslDriver::getJointVel(DoubleMap& dmap, int flag)
 {
   if (!initialized)
     return -1;
-  slvr->getJointVelocities(jvelocities);
-  slvr->getFeatureVelocities(fvelocities);
+  solver_->getJointVelocities(joint_velocities_);
+  solver_->getFeatureVelocities(feature_velocities_);
   dmap.clear();
   if ((flag == 1) || (flag == 3))
   {
-    for (unsigned int i = 0; i < jnames.size(); ++i)
+    for (unsigned int i = 0; i < joint_names_.size(); ++i)
     {
-      dmap[jnames[i]] = jvelocities[i];
+      dmap[joint_names_[i]] = joint_velocities_[i];
     }
     dmap["time"] = 1.0;
   }
   if ((flag == 2) || (flag == 3))
   {
-    for (unsigned int i = 0; i < fnames.size(); ++i)
+    for (unsigned int i = 0; i < feature_names_.size(); ++i)
     {
-      dmap[fnames[i]] = fvelocities[i];
+      dmap[feature_names_[i]] = feature_velocities_[i];
     }
   }
   return 0;
@@ -169,22 +172,22 @@ int EtaslDriver::getJointPos(DoubleMap& dmap, int flag)
 {
   if (!initialized)
     return -1;
-  slvr->getJointStates(jvalues);
-  slvr->getFeatureStates(fvalues);
+  solver_->getJointStates(joint_values_);
+  solver_->getFeatureStates(feature_values_);
   dmap.clear();
   if ((flag == 1) || (flag == 3))
   {
-    for (unsigned int i = 0; i < jnames.size(); ++i)
+    for (unsigned int i = 0; i < joint_names_.size(); ++i)
     {
-      dmap[jnames[i]] = jvalues[i];
+      dmap[joint_names_[i]] = joint_values_[i];
     }
-    dmap["time"] = slvr->getTime();
+    dmap["time"] = solver_->getTime();
   }
   if ((flag == 2) || (flag == 3))
   {
-    for (unsigned int i = 0; i < fnames.size(); ++i)
+    for (unsigned int i = 0; i < feature_names_.size(); ++i)
     {
-      dmap[fnames[i]] = fvalues[i];
+      dmap[feature_names_[i]] = feature_values_[i];
     }
   }
   return 0;
@@ -192,7 +195,7 @@ int EtaslDriver::getJointPos(DoubleMap& dmap, int flag)
 
 void EtaslDriver::getOutput(DoubleMap& dmap)
 {
-  for (Context::OutputVarMap::iterator it = ctx->output_vars.begin(); it != ctx->output_vars.end(); it++)
+  for (Context::OutputVarMap::iterator it = ctx_->output_vars.begin(); it != ctx_->output_vars.end(); it++)
   {
     Expression<double>::Ptr expr = boost::dynamic_pointer_cast<Expression<double> >(it->second);
     if (expr)
@@ -202,8 +205,8 @@ void EtaslDriver::getOutput(DoubleMap& dmap)
   }
 }
 
-int EtaslDriver::initialize(const DoubleMap& initialval, double initialization_time, double sample_time, double convergence_crit,
-                            DoubleMap& convergedval)
+int EtaslDriver::initialize(const DoubleMap& initialval, double initialization_time, double sample_time,
+                            double convergence_crit, DoubleMap& convergedval)
 {
   if (!etaslread)
     return -5;
@@ -212,25 +215,26 @@ int EtaslDriver::initialize(const DoubleMap& initialval, double initialization_t
 
   // prepares matrices etc and
   // initializes variables from their "initial" field (including feature variables)
-  int retval = slvr->prepareInitialization(ctx);
+  int retval = solver_->prepareInitialization(ctx_);
   if (retval != 0)
   {
-    ROS_INFO_STREAM(" : etasl_rtt::initialize() - prepareInitialization : the taskspecification contains priority levels that the numerical solver "
+    ROS_INFO_STREAM(" : etasl_rtt::initialize() - prepareInitialization : the taskspecification contains priority "
+                    "levels that the numerical solver "
                     "can't handle. ");
     return -1;
   }
 
-  slvr->getJointNameVector(jnames);
-  jvalues.setZero(jnames.size());
-  jvelocities.setZero(jnames.size());
+  solver_->getJointNameVector(joint_names_);
+  joint_values_.setZero(joint_names_.size());
+  joint_velocities_.setZero(joint_names_.size());
 
-  slvr->getFeatureNameVector(fnames);
-  fvalues.setZero(fnames.size());
-  fvelocities.setZero(fnames.size());
+  solver_->getFeatureNameVector(feature_names_);
+  feature_values_.setZero(feature_names_.size());
+  feature_velocities_.setZero(feature_names_.size());
 
-  slvr->getJointStates(jvalues);
-  slvr->getFeatureStates(fvalues);
-  slvr->setTime(0.0);
+  solver_->getJointStates(joint_values_);
+  solver_->getFeatureStates(feature_values_);
+  solver_->setTime(0.0);
   initialized = true;
 
   setJointPos(initialval);
@@ -244,40 +248,42 @@ int EtaslDriver::initialize(const DoubleMap& initialval, double initialization_t
 
   //********************* Preparing for normal execution  ************************
   // initializes variables from their "initial" field (including feature variables)
-  retval = slvr->prepareExecution(ctx);
+  retval = solver_->prepareExecution(ctx_);
   if (retval != 0)
   {
-    ROS_INFO_STREAM(" : etasl_rtt::initialize() - prepareExecution : the taskspecification contains priority levels that the numerical solver can't "
+    ROS_INFO_STREAM(" : etasl_rtt::initialize() - prepareExecution : the taskspecification contains priority levels "
+                    "that the numerical solver can't "
                     "handle. ");
     initialized = false;
     return -3;
   }
 
-  slvr->getJointNameVector(jnames);
-  jvalues.setZero(jnames.size());
-  jvelocities.setZero(jnames.size());
+  solver_->getJointNameVector(joint_names_);
+  joint_values_.setZero(joint_names_.size());
+  joint_velocities_.setZero(joint_names_.size());
 
-  slvr->getFeatureNameVector(fnames);
-  fvalues.setZero(fnames.size());
-  fvelocities.setZero(jnames.size());
+  solver_->getFeatureNameVector(feature_names_);
+  feature_values_.setZero(feature_names_.size());
+  feature_velocities_.setZero(joint_names_.size());
 
-  slvr->getJointStates(jvalues);
-  slvr->getFeatureStates(fvalues);
-  slvr->setTime(0.0);
-  ctx->resetMonitors();
-  ctx->clearFinishStatus();
+  solver_->getJointStates(joint_values_);
+  solver_->getFeatureStates(feature_values_);
+  solver_->setTime(0.0);
+  ctx_->resetMonitors();
+  ctx_->clearFinishStatus();
   initialized = true;
 
   setJointPos(convergedval);
 
-  retval = slvr->solve();
+  retval = solver_->solve();
   if (retval != 0)
   {
-    ROS_INFO_STREAM("solver encountered the following error during the first solve in initialize \nmessage: " << slvr->errorMessage(retval).c_str()
-                                                                                                              << "\n stop() will be called on etasl "
-                                                                                                                 "rtt component and e_error event "
-                                                                                                                 "will be send"
-                                                                                                              << "\n");
+    ROS_INFO_STREAM("solver encountered the following error during the first solve in initialize \nmessage: "
+                    << solver_->errorMessage(retval).c_str()
+                    << "\n stop() will be called on etasl "
+                       "rtt component and e_error event "
+                       "will be send"
+                    << "\n");
     initialized = false;
     return -4;
   }
@@ -286,18 +292,18 @@ int EtaslDriver::initialize(const DoubleMap& initialval, double initialization_t
 
 int EtaslDriver::solve()
 {
-  int retval = slvr->solve();
+  int retval = solver_->solve();
   if (retval != 0)
   {
     ROS_INFO_STREAM("solved encountered error during computations in updateHook()"
-                    << " ) \nmessage: " << slvr->errorMessage(retval).c_str()
+                    << " ) \nmessage: " << solver_->errorMessage(retval).c_str()
                     << "\n stop() will be called on etasl rtt component and e_error event will be sent"
                     << "\n"
-                    << ctx);
+                    << ctx_);
     return -1;
   }
-  ctx->checkMonitors();
-  if (ctx->getFinishStatus())
+  ctx_->checkMonitors();
+  if (ctx_->getFinishStatus())
   {
     return 1;
   }
@@ -306,7 +312,7 @@ int EtaslDriver::solve()
 
 void EtaslDriver::evaluate()
 {
-  slvr->evaluate_expressions();
+  solver_->evaluate_expressions();
 }
 
 // std::string EtaslDriver::getEvent()
@@ -322,7 +328,7 @@ int EtaslDriver::nrOfFeatureVar()
 {
   if (initialized)
   {
-    return fvalues.size();
+    return feature_values_.size();
   }
   else
   {
@@ -334,7 +340,7 @@ int EtaslDriver::nrOfRobotVar()
 {
   if (initialized)
   {
-    return jvalues.size();
+    return joint_values_.size();
   }
   else
   {
@@ -344,12 +350,12 @@ int EtaslDriver::nrOfRobotVar()
 
 int EtaslDriver::nrOfScalarConstraints()
 {
-  return ctx->cnstr_scalar.size();
+  return ctx_->cnstr_scalar.size();
 }
 
 int EtaslDriver::nrOfBoxConstraints()
 {
-  return ctx->cnstr_box.size();
+  return ctx_->cnstr_box.size();
 }
 
 /**
@@ -357,9 +363,9 @@ int EtaslDriver::nrOfBoxConstraints()
  */
 void EtaslDriver::getInputNames(std::vector<std::string>& name)
 {
-  name.resize(ctx->input_vars.size());
+  name.resize(ctx_->input_vars.size());
   int count = 0;
-  for (Context::InputVarMap::iterator it = ctx->input_vars.begin(); it != ctx->input_vars.end(); ++it)
+  for (Context::InputVarMap::iterator it = ctx_->input_vars.begin(); it != ctx_->input_vars.end(); ++it)
   {
     name[count] = it->first;
     count++;
@@ -371,32 +377,33 @@ void EtaslDriver::getInputNames(std::vector<std::string>& name)
  */
 void EtaslDriver::getOutputNames(std::vector<std::string>& name)
 {
-  name.resize(ctx->output_vars.size());
+  name.resize(ctx_->output_vars.size());
   int count = 0;
-  for (Context::OutputVarMap::iterator it = ctx->output_vars.begin(); it != ctx->output_vars.end(); ++it)
+  for (Context::OutputVarMap::iterator it = ctx_->output_vars.begin(); it != ctx_->output_vars.end(); ++it)
   {
     name[count] = it->first;
     count++;
   }
 }
 
-void EtaslDriver::getVariables(int flag, std::vector<std::string>& name, std::vector<double>& weight, std::vector<double>& initval)
+void EtaslDriver::getVariables(int flag, std::vector<std::string>& name, std::vector<double>& weight,
+                               std::vector<double>& initval)
 {
   all_ndx.clear();
   if ((flag == 1) || (flag == 3))
   {
-    ctx->getScalarsOfType("robot", all_ndx);
+    ctx_->getScalarsOfType("robot", all_ndx);
   }
   if ((flag == 2) || (flag == 3))
   {
-    ctx->getScalarsOfType("feature", all_ndx);
+    ctx_->getScalarsOfType("feature", all_ndx);
   }
   name.resize(all_ndx.size());
   weight.resize(all_ndx.size());
   initval.resize(all_ndx.size());
   for (size_t i = 0; i < all_ndx.size(); ++i)
   {
-    VariableScalar* vs = ctx->getScalarStruct(all_ndx[i]);
+    VariableScalar* vs = ctx_->getScalarStruct(all_ndx[i]);
     name[i] = vs->name;
     weight[i] = vs->weight->value();
     initval[i] = vs->initial_value;

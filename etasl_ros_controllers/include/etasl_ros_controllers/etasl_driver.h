@@ -11,6 +11,7 @@
 #include <expressiongraph/context.hpp>
 #include <expressiongraph/qpoases_solver.hpp>
 #include <expressiongraph/context_scripting.hpp>
+#include <expressiongraph/defaultobserver.hpp>
 
 #include <ros/ros.h>
 
@@ -23,19 +24,19 @@ typedef std::vector<std::string> StringVector;
 
 class EtaslDriver
 {
-  boost::shared_ptr<qpOASESSolver> slvr;
+  boost::shared_ptr<qpOASESSolver> solver_;
   bool etaslread;
   bool initialized;
-  boost::shared_ptr<Context> ctx;
+  boost::shared_ptr<Context> ctx_;
   boost::shared_ptr<LuaContext> lua;
-  // boost::shared_ptr<PythonObserver> obs;
+  boost::shared_ptr<Observer> obs_;
 
-  StringVector jnames;
-  Eigen::VectorXd jvalues;
-  Eigen::VectorXd jvelocities;
-  StringVector fnames;
-  Eigen::VectorXd fvalues;
-  Eigen::VectorXd fvelocities;
+  StringVector joint_names_;
+  Eigen::VectorXd joint_values_;
+  Eigen::VectorXd joint_velocities_;
+  StringVector feature_names_;
+  Eigen::VectorXd feature_values_;
+  Eigen::VectorXd feature_velocities_;
   int time_ndx;
 
   std::vector<int> all_ndx;  // tmp storage for requesting variable indices to context.

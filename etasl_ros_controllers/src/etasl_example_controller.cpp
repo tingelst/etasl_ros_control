@@ -26,7 +26,8 @@ bool ExampleController::init(hardware_interface::RobotHW* robot_hardware, ros::N
   }
   if (joint_names_.size() != 6)
   {
-    ROS_ERROR_STREAM("ExampleController: Wrong number of joint names, got " << joint_names_.size() << " instead of 6 names!");
+    ROS_ERROR_STREAM("ExampleController: Wrong number of joint names, got " << joint_names_.size()
+                                                                            << " instead of 6 names!");
     return false;
   }
   position_joint_handles_.resize(6);
@@ -64,7 +65,8 @@ void ExampleController::starting(const ros::Time& /* time */)
   etasl_->readTaskSpecificationFile(task_specification_filename_);
 
   DoubleMap initial_position_map;
-  std::transform(joint_names_.begin(), joint_names_.end(), initial_pos_.begin(), std::inserter(initial_position_map, initial_position_map.end()),
+  std::transform(joint_names_.begin(), joint_names_.end(), initial_pos_.begin(),
+                 std::inserter(initial_position_map, initial_position_map.end()),
                  [](std::string a, double b) { return std::make_pair(a, b); });
 
   DoubleMap converged_values_map;
@@ -82,11 +84,22 @@ void ExampleController::update(const ros::Time& /*time*/, const ros::Duration& p
   }
 
   DoubleMap position_map;
-  std::transform(joint_names_.begin(), joint_names_.end(), position.begin(), std::inserter(position_map, position_map.end()),
+  std::transform(joint_names_.begin(), joint_names_.end(), position.begin(),
+                 std::inserter(position_map, position_map.end()),
                  [](std::string a, double b) { return std::make_pair(a, b); });
+
+  DoubleMap input_map;
+  double f1 = 1.0;
+  double f2 = 2.5;
+  input_map["tgt_x"] = sin(f1 * elapsed_time_.toSec()) * 0.15 + 0.7;
+  input_map["tgt_y"] = sin(f2 * elapsed_time_.toSec()) * 0.1 + 0.4;
+  input_map["tgt_z"] = 0.0;
+
+  etasl_->setInput(input_map);
 
   etasl_->setJointPos(position_map);
   etasl_->solve();
+
   DoubleMap velocity_map;
   etasl_->getJointVel(velocity_map);
 
@@ -94,6 +107,14 @@ void ExampleController::update(const ros::Time& /*time*/, const ros::Duration& p
   {
     position_joint_handles_[i].setCommand(position[i] + velocity_map[joint_names_[i]] * period.toSec());
   }
+
+  DoubleMap output_map;
+  // output_map["error_x"] = 0.0;
+  // output_map["error_y"] = 0.0;
+  // output_map["error_z"] = 0.0;
+  etasl_->getOutput(output_map);
+
+  ROS_INFO_STREAM(output_map["error_x"]);
 }
 
 }  // namespace etasl_ros_controllers
