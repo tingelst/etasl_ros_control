@@ -108,13 +108,17 @@ void ExampleController::update(const ros::Time& /*time*/, const ros::Duration& p
     position_joint_handles_[i].setCommand(position[i] + velocity_map[joint_names_[i]] * period.toSec());
   }
 
-  DoubleMap output_map;
+  DoubleMap output_map{};
   // output_map["error_x"] = 0.0;
   // output_map["error_y"] = 0.0;
   // output_map["error_z"] = 0.0;
+  // StringVector output_names;
+  // etasl_->getOutputNames(output_names);
   etasl_->getOutput(output_map);
 
-  ROS_INFO_STREAM(output_map["error_x"]);
+  ROS_INFO_STREAM("error_x: " << output_map["global.error_x"]);
+  // ROS_INFO_STREAM("error_y: " << output_map["global.error_y"]);
+  // ROS_INFO_STREAM("error_z: " << output_map["global.error_z"]);
 }
 
 }  // namespace etasl_ros_controllers
