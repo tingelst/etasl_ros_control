@@ -45,32 +45,43 @@ ninetydegrees = constant(90 * deg2rad)
 Constraint{
     context = ctx,
     name = "joint_trajectory1",
-    expr = j1 - zeroval
+    expr = j1,
+    target = constant(0)
 }
+
 Constraint{
     context = ctx,
     name = "joint_trajectory2",
-    expr = ninetydegrees + j2
+    expr = j2,
+    target = constant(-150 * deg2rad)
 }
+
 Constraint{
     context = ctx,
     name = "joint_trajectory3",
-    expr = j3 - -constant(45 * deg2rad)
+    expr = j3,
+    target = constant(150 * deg2rad)
 }
+
 Constraint{
     context = ctx,
     name = "joint_trajectory4",
-    expr = j4 - zeroval
+    expr = j4,
+    target = constant(0)
 }
+
 Constraint{
     context = ctx,
     name = "joint_trajectory5",
-    expr = j5 - ninetydegrees
+    expr = j5,
+    target = constant(0)
 }
+
 Constraint{
     context = ctx,
     name = "joint_trajectory6",
-    expr = j6 - zeroval
+    expr = j6,
+    target = constant(0)
 }
 
 -- Monitor{

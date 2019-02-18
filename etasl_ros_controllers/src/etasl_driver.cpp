@@ -48,7 +48,7 @@ EtaslDriver::EtaslDriver(int nWSR, double cputime, double regularization_factor)
   ctx_ = boost::make_shared<Context>();
   ctx_->addType("robot");
   ctx_->addType("feature");
-  time_ndx = ctx_->getScalarNdx("time");
+  time_ndx_ = ctx_->getScalarNdx("time");
   lua = boost::make_shared<LuaContext>();
   lua->initContext(ctx_);
 
@@ -99,7 +99,7 @@ int EtaslDriver::setInputVelocity(const DoubleMap& dmap)
     VariableType<double>::Ptr v = ctx_->getInputChannel<double>(it->first);
     if (v)
     {
-      v->setJacobian(time_ndx, it->second);
+      v->setJacobian(time_ndx_, it->second);
     }
     else
     {
@@ -111,8 +111,9 @@ int EtaslDriver::setInputVelocity(const DoubleMap& dmap)
 
 int EtaslDriver::setJointPos(const DoubleMap& dmap)
 {
-  if (!initialized)
+  if (!initialized) {
     return -1;
+  }
   int count = 0;
   for (unsigned int i = 0; i < joint_names_.size(); ++i)
   {

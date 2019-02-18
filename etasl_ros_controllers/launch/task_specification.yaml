@@ -1,6 +1,8 @@
 etasl:
   task_specificaton:
-    # file: "/home/lars/ros/manulab_ws/src/etasl_ros_control/etasl_ros_controllers/scripts/example.lua"
+    file: "/home/lars/ros/manulab_ws/src/etasl_ros_control/etasl_ros_controllers/scripts/example.lua"
+    # file: "/home/lars/ros/manulab_ws/src/etasl_ros_control/etasl_ros_controllers/scripts/example2.lua"
+    # file: "/home/lars/ros/manulab_ws/src/etasl_ros_control/etasl_ros_controllers/scripts/example3.lua"
     # file: "/home/ros/ws/etasl-py/src/etasl_ros_control/etasl_ros_controllers/scripts/example.lua"
-    file: "/home/ros/ws/etasl-py/src/etasl_ros_control/etasl_ros_controllers/scripts/example2.lua"
+    # file: "/home/ros/ws/etasl-py/src/etasl_ros_control/etasl_ros_controllers/scripts/example2.lua"
     # file: "/home/ros/ws/etasl-py/src/etasl_ros_control/etasl_ros_controllers/scripts/example3.lua"

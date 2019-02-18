@@ -88,14 +88,14 @@ void ExampleController::update(const ros::Time& /*time*/, const ros::Duration& p
                  std::inserter(position_map, position_map.end()),
                  [](std::string a, double b) { return std::make_pair(a, b); });
 
-  DoubleMap input_map;
-  double f1 = 1.0;
-  double f2 = 2.5;
-  input_map["tgt_x"] = sin(f1 * elapsed_time_.toSec()) * 0.15 + 0.7;
-  input_map["tgt_y"] = sin(f2 * elapsed_time_.toSec()) * 0.1 + 0.4;
-  input_map["tgt_z"] = 0.0;
+  // DoubleMap input_map;
+  // double f1 = 1.0;
+  // double f2 = 2.5;
+  // input_map["tgt_x"] = sin(f1 * elapsed_time_.toSec()) * 0.15 + 0.7;
+  // input_map["tgt_y"] = sin(f2 * elapsed_time_.toSec()) * 0.1 + 0.4;
+  // input_map["tgt_z"] = 0.0;
 
-  etasl_->setInput(input_map);
+  // etasl_->setInput(input_map);
 
   etasl_->setJointPos(position_map);
   etasl_->solve();
@@ -116,7 +116,7 @@ void ExampleController::update(const ros::Time& /*time*/, const ros::Duration& p
   // etasl_->getOutputNames(output_names);
   etasl_->getOutput(output_map);
 
-  ROS_INFO_STREAM("error_x: " << output_map["global.error_x"]);
+  // ROS_INFO_STREAM("error_x: " << output_map["global.error_x"]);
   // ROS_INFO_STREAM("error_y: " << output_map["global.error_y"]);
   // ROS_INFO_STREAM("error_z: " << output_map["global.error_z"]);
 }

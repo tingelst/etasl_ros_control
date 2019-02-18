@@ -37,7 +37,7 @@ class EtaslDriver
   StringVector feature_names_;
   Eigen::VectorXd feature_values_;
   Eigen::VectorXd feature_velocities_;
-  int time_ndx;
+  int time_ndx_;
 
   std::vector<int> all_ndx;  // tmp storage for requesting variable indices to context.
 
