@@ -111,9 +111,11 @@ int EtaslDriver::setInputVelocity(const DoubleMap& dmap)
 
 int EtaslDriver::setJointPos(const DoubleMap& dmap)
 {
-  if (!initialized) {
+  if (!initialized)
+  {
     return -1;
   }
+
   int count = 0;
   for (unsigned int i = 0; i < joint_names_.size(); ++i)
   {
