@@ -26,8 +26,7 @@ bool ExampleController::init(hardware_interface::RobotHW* robot_hardware, ros::N
   }
   if (joint_names_.size() != 6)
   {
-    ROS_ERROR_STREAM("ExampleController: Wrong number of joint names, got " << joint_names_.size()
-                                                                            << " instead of 6 names!");
+    ROS_ERROR_STREAM("ExampleController: Wrong number of joint names, got " << joint_names_.size() << " instead of 6 names!");
     return false;
   }
   position_joint_handles_.resize(6);
@@ -60,8 +59,9 @@ bool ExampleController::init(hardware_interface::RobotHW* robot_hardware, ros::N
     ROS_INFO_STREAM("\t" << name);
     name.erase(0, 7);  // Remove substring "global."
     auto input_buffer = boost::make_shared<realtime_tools::RealtimeBuffer<double>>();
-    boost::function<void(const std_msgs::Float64ConstPtr&)> callback =
-        [input_buffer](const std_msgs::Float64ConstPtr& msg) { input_buffer->writeFromNonRT(msg->data); };
+    boost::function<void(const std_msgs::Float64ConstPtr&)> callback = [input_buffer](const std_msgs::Float64ConstPtr& msg) {
+      input_buffer->writeFromNonRT(msg->data);
+    };
     subs_.push_back(node_handle.subscribe<std_msgs::Float64>(name, 1, callback));
 
     input_buffers_.push_back(input_buffer);
@@ -74,8 +74,7 @@ bool ExampleController::init(hardware_interface::RobotHW* robot_hardware, ros::N
   {
     ROS_INFO_STREAM("\t" << name);
     name.erase(0, 7);  // Remove substring "global."
-    realtime_pubs_.push_back(
-        boost::make_shared<realtime_tools::RealtimePublisher<std_msgs::Float64>>(node_handle, name, 4));
+    realtime_pubs_.push_back(boost::make_shared<realtime_tools::RealtimePublisher<std_msgs::Float64>>(node_handle, name, 4));
   }
 
   return true;
@@ -90,8 +89,7 @@ void ExampleController::starting(const ros::Time& /* time */)
   elapsed_time_ = ros::Duration(0.0);
 
   DoubleMap initial_position_map;
-  std::transform(joint_names_.begin(), joint_names_.end(), initial_pos_.begin(),
-                 std::inserter(initial_position_map, initial_position_map.end()),
+  std::transform(joint_names_.begin(), joint_names_.end(), initial_pos_.begin(), std::inserter(initial_position_map, initial_position_map.end()),
                  [](std::string a, double b) { return std::make_pair(a, b); });
 
   DoubleMap converged_values_map;
@@ -109,8 +107,7 @@ void ExampleController::update(const ros::Time& /*time*/, const ros::Duration& p
   }
 
   DoubleMap position_map;
-  std::transform(joint_names_.begin(), joint_names_.end(), position.begin(),
-                 std::inserter(position_map, position_map.end()),
+  std::transform(joint_names_.begin(), joint_names_.end(), position.begin(), std::inserter(position_map, position_map.end()),
                  [](std::string a, double b) { return std::make_pair(a, b); });
 
   StringVector input_names{};
@@ -120,7 +117,6 @@ void ExampleController::update(const ros::Time& /*time*/, const ros::Duration& p
   {
     input_map[input_names[i]] = *input_buffers_[i]->readFromNonRT();
   }
-
   etasl_->setInput(input_map);
 
   etasl_->setJointPos(position_map);

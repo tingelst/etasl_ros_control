@@ -29,8 +29,7 @@ using namespace KDL;
 
 namespace etasl_ros_controllers
 {
-class ExampleController
-  : public controller_interface::MultiInterfaceController<hardware_interface::PositionJointInterface>
+class ExampleController : public controller_interface::MultiInterfaceController<hardware_interface::PositionJointInterface>
 {
 public:
   bool init(hardware_interface::RobotHW* robot_hardware, ros::NodeHandle& node_handle) override;
@@ -38,8 +37,7 @@ public:
   void update(const ros::Time&, const ros::Duration& period) override;
 
 private:
-  bool initializeFeatureVariables(Context::Ptr ctx, solver& solver, double initialization_time, double sample_time,
-                                  double convergence_crit);
+  bool initializeFeatureVariables(Context::Ptr ctx, solver& solver, double initialization_time, double sample_time, double convergence_crit);
 
   hardware_interface::PositionJointInterface* position_joint_interface_;
   std::vector<hardware_interface::JointHandle> position_joint_handles_;
