@@ -12,6 +12,7 @@
 #include <expressiongraph/qpoases_solver.hpp>
 #include <expressiongraph/context_scripting.hpp>
 #include <expressiongraph/defaultobserver.hpp>
+#include <expressiongraph/outputs_ros_lines.hpp>
 
 #include <ros/ros.h>
 
@@ -30,6 +31,7 @@ class EtaslDriver
   boost::shared_ptr<Context> ctx_;
   boost::shared_ptr<LuaContext> lua;
   boost::shared_ptr<Observer> obs_;
+  boost::shared_ptr<OutputGenerator> out_;
 
   StringVector joint_names_;
   Eigen::VectorXd joint_values_;

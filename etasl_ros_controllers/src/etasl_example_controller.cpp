@@ -44,12 +44,39 @@ bool ExampleController::init(hardware_interface::RobotHW* robot_hardware, ros::N
     }
   }
 
-  if (!node_handle.getParam("/etasl/task_specificaton/file", task_specification_filename_))
+  if (!node_handle.getParam("/etasl/task_specification", task_specification_))
   {
-    ROS_ERROR("ExampleController: Could not find task specification filename");
+    ROS_ERROR("ExampleController: Could not find task specification on parameter server");
   }
 
   etasl_ = boost::make_shared<EtaslDriver>(300, 0.0, 0.0001);
+  etasl_->readTaskSpecificationString(task_specification_);
+
+  StringVector input_names{};
+  etasl_->getInputNames(input_names);
+  ROS_INFO_STREAM("ExampleController: Input channels:");
+  for (auto name : input_names)
+  {
+    ROS_INFO_STREAM("\t" << name);
+    name.erase(0, 7);  // Remove substring "global."
+    auto input_buffer = boost::make_shared<realtime_tools::RealtimeBuffer<double>>();
+    boost::function<void(const std_msgs::Float64ConstPtr&)> callback =
+        [input_buffer](const std_msgs::Float64ConstPtr& msg) { input_buffer->writeFromNonRT(msg->data); };
+    subs_.push_back(node_handle.subscribe<std_msgs::Float64>(name, 1, callback));
+
+    input_buffers_.push_back(input_buffer);
+  }
+
+  StringVector output_names{};
+  etasl_->getOutputNames(output_names);
+  ROS_INFO_STREAM("ExampleController: Output channels:");
+  for (auto name : output_names)
+  {
+    ROS_INFO_STREAM("\t" << name);
+    name.erase(0, 7);  // Remove substring "global."
+    realtime_pubs_.push_back(
+        boost::make_shared<realtime_tools::RealtimePublisher<std_msgs::Float64>>(node_handle, name, 4));
+  }
 
   return true;
 }
@@ -61,8 +88,6 @@ void ExampleController::starting(const ros::Time& /* time */)
     initial_pos_[i] = position_joint_handles_[i].getPosition();
   }
   elapsed_time_ = ros::Duration(0.0);
-
-  etasl_->readTaskSpecificationFile(task_specification_filename_);
 
   DoubleMap initial_position_map;
   std::transform(joint_names_.begin(), joint_names_.end(), initial_pos_.begin(),
@@ -88,14 +113,15 @@ void ExampleController::update(const ros::Time& /*time*/, const ros::Duration& p
                  std::inserter(position_map, position_map.end()),
                  [](std::string a, double b) { return std::make_pair(a, b); });
 
-  // DoubleMap input_map;
-  // double f1 = 1.0;
-  // double f2 = 2.5;
-  // input_map["tgt_x"] = sin(f1 * elapsed_time_.toSec()) * 0.15 + 0.7;
-  // input_map["tgt_y"] = sin(f2 * elapsed_time_.toSec()) * 0.1 + 0.4;
-  // input_map["tgt_z"] = 0.0;
+  StringVector input_names{};
+  etasl_->getInputNames(input_names);
+  DoubleMap input_map;
+  for (size_t i = 0; i < input_buffers_.size(); i++)
+  {
+    input_map[input_names[i]] = *input_buffers_[i]->readFromNonRT();
+  }
 
-  // etasl_->setInput(input_map);
+  etasl_->setInput(input_map);
 
   etasl_->setJointPos(position_map);
   etasl_->solve();
@@ -108,17 +134,18 @@ void ExampleController::update(const ros::Time& /*time*/, const ros::Duration& p
     position_joint_handles_[i].setCommand(position[i] + velocity_map[joint_names_[i]] * period.toSec());
   }
 
+  StringVector output_names;
+  etasl_->getOutputNames(output_names);
   DoubleMap output_map{};
-  // output_map["error_x"] = 0.0;
-  // output_map["error_y"] = 0.0;
-  // output_map["error_z"] = 0.0;
-  // StringVector output_names;
-  // etasl_->getOutputNames(output_names);
   etasl_->getOutput(output_map);
-
-  // ROS_INFO_STREAM("error_x: " << output_map["global.error_x"]);
-  // ROS_INFO_STREAM("error_y: " << output_map["global.error_y"]);
-  // ROS_INFO_STREAM("error_z: " << output_map["global.error_z"]);
+  for (size_t i = 0; i < output_names.size(); i++)
+  {
+    if (realtime_pubs_[i]->trylock())
+    {
+      realtime_pubs_[i]->msg_.data = output_map[output_names[i]];
+      realtime_pubs_[i]->unlockAndPublish();
+    }
+  }
 }
 
 }  // namespace etasl_ros_controllers

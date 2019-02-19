@@ -1,10 +1,9 @@
--- Loading the KUKA KR6 R900 sixx (Agilus) robot with a standard script:
 require("context")
 require("geometric")
 
--- loading a model for the KUKA KR6 R900 Sixx (Agilus)
+-- Load robot_description from parameter server
 local u = UrdfExpr()
-u:readFromFile(rospack_find("etasl_ros_controllers") .. "/scripts/kuka_kr6r900sixx.urdf")
+u:readFromParam("/robot_description")
 u:addTransform("ee", "tool0", "base_link")
 
 local r = u:getExpressions(ctx)

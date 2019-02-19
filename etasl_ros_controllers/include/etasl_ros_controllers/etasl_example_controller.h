@@ -6,12 +6,18 @@
 #include <string>
 #include <vector>
 
+#include <boost/function.hpp>
+
 #include <controller_interface/multi_interface_controller.h>
 #include <hardware_interface/joint_command_interface.h>
 #include <hardware_interface/robot_hw.h>
 #include <ros/package.h>
 #include <ros/node_handle.h>
 #include <ros/time.h>
+
+#include <std_msgs/Float64.h>
+#include <realtime_tools/realtime_publisher.h>
+#include <realtime_tools/realtime_buffer.h>
 
 #include <expressiongraph/context.hpp>
 #include <expressiongraph/qpoases_solver.hpp>
@@ -40,8 +46,17 @@ private:
   ros::Duration elapsed_time_;
   std::array<double, 6> initial_pos_{};
   std::vector<std::string> joint_names_;
-  std::string task_specification_filename_;
+  std::string task_specification_;
 
   boost::shared_ptr<EtaslDriver> etasl_;
+
+  realtime_tools::RealtimeBuffer<double> command_buffer_;
+
+  std::vector<boost::shared_ptr<realtime_tools::RealtimePublisher<std_msgs::Float64>>> realtime_pubs_;
+
+  ros::Subscriber sub_command_;
+  std::vector<ros::Subscriber> subs_;
+  std::vector<boost::shared_ptr<realtime_tools::RealtimeBuffer<double>>> input_buffers_;
+  void commandCB(const std_msgs::Float64ConstPtr& msg);
 };
 }  // namespace etasl_ros_controllers

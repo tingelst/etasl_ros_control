@@ -1,10 +1,8 @@
--- Loading the KUKA KR6 R900 sixx (Agilus) robot with a standard script:
 require("context")
 require("geometric")
 
--- loading a model for the KUKA KR6 R900 Sixx (Agilus)
 local u = UrdfExpr()
-u:readFromFile(rospack_find("etasl_ros_controllers") .. "/scripts/kuka_kr6r900sixx.urdf")
+u:readFromParam("/robot_description")
 u:addTransform("ee", "tool0", "base_link")
 
 local r = u:getExpressions(ctx)
@@ -28,7 +26,7 @@ j4 = ctx:getScalarExpr(robot_joints[4])
 j5 = ctx:getScalarExpr(robot_joints[5])
 j6 = ctx:getScalarExpr(robot_joints[6])
 
-maxvel = 0.5
+maxvel = 1.0
 for i = 1, #robot_joints do
     BoxConstraint{
         context = ctx,
@@ -38,7 +36,7 @@ for i = 1, #robot_joints do
     }
 end
 
-tgt_x = ctx:createInputChannelScalar("tgt_x", 0)
+tgt_x = ctx:createInputChannelScalar("tgt_x", 0.5)
 tgt_y = ctx:createInputChannelScalar("tgt_y", 0)
 tgt_z = ctx:createInputChannelScalar("tgt_z", 0)
 
@@ -48,8 +46,8 @@ Constraint{
     context = ctx,
     name = "laserdistance",
     expr = d,
-    target_lower = 0.3,
-    target_upper = 0.45,
+    target_lower = 0.5,
+    target_upper = 0.9,
     K = 4
 }
 

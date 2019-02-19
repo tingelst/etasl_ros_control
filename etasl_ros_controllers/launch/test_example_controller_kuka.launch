@@ -4,19 +4,19 @@
 
     <include file="$(find kuka_kr6_support)/launch/load_kr6r900sixx.launch" />
 
-    <rosparam file="$(find etasl_ros_controllers)/launch/task_specification.yaml" command="load"/>
+    <group ns="etasl">
+        <param name="task_specification" command="cat '$(find etasl_ros_controllers)/scripts/example3.lua'"/>
+    </group>
 
     <rosparam file="$(find kuka_rsi_hw_interface)/test/test_params_sim.yaml" command="load" if="$(arg sim)"/>
     <rosparam file="$(find kuka_rsi_hw_interface)/test/test_params.yaml" command="load" unless="$(arg sim)"/>
 
     <node name="kuka_hardware_interface" pkg="kuka_rsi_hw_interface" type="kuka_hardware_interface_node" respawn="false" output="screen" required="true"/>
 
+    <!-- Load controllers -->
     <rosparam file="$(find etasl_ros_controllers)/launch/hardware_controllers.yaml" command="load"/>
     <rosparam file="$(find etasl_ros_controllers)/launch/controller_joint_names.yaml" command="load"/>
-
-    <!-- Load controllers -->
-    <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false" output="screen"
-     args="example_controller joint_state_controller"/>
+    <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false" output="screen" args="example_controller joint_state_controller"/>
 
     <!-- Load robot state publisher -->
     <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
