@@ -4,7 +4,7 @@ require("geometric")
 
 -- loading a model for the KUKA KR6 R900 Sixx (Agilus)
 local u = UrdfExpr()
-u:readFromFile(rospack_find("etasl_ros_controllers") .. "/scripts/kuka_kr6r900sixx.urdf")
+u:readFromParam("/robot_description")
 u:addTransform("ee", "tool0", "base_link")
 
 local r = u:getExpressions(ctx)
