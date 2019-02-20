@@ -26,7 +26,7 @@ j4 = ctx:getScalarExpr(robot_joints[4])
 j5 = ctx:getScalarExpr(robot_joints[5])
 j6 = ctx:getScalarExpr(robot_joints[6])
 
-maxvel = 0.25
+maxvel = 1.0
 for i = 1, #robot_joints do
     BoxConstraint{
         context = ctx,

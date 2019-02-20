@@ -6,6 +6,9 @@
 
     <group ns="etasl">
         <param name="task_specification" command="cat '$(find etasl_ros_controllers)/scripts/example3.lua'"/>
+        <rosparam file="$(find etasl_ros_controllers)/config/solver.yaml" command="load"/>
+        <rosparam file="$(find etasl_ros_controllers)/config/channels.yaml" command="load"/>
+        <rosparam file="$(find etasl_ros_controllers)/config/joint_names.yaml" command="load"/>
     </group>
 
     <rosparam file="$(find kuka_rsi_hw_interface)/test/test_params_sim.yaml" command="load" if="$(arg sim)"/>

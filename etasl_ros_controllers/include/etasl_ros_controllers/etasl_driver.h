@@ -111,6 +111,8 @@ public:
    */
   int setJointPos(const DoubleMap& dmap);
 
+  int setJointPos(const std::vector<double>& joint_positions, std::vector<std::string>& joint_names);
+
   /**
    * gets the (velocity) output for the variables specified in the map (controller or
    * feature variables).

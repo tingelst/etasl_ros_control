@@ -37,24 +37,30 @@ public:
   void update(const ros::Time&, const ros::Duration& period) override;
 
 private:
-  bool initializeFeatureVariables(Context::Ptr ctx, solver& solver, double initialization_time, double sample_time, double convergence_crit);
-
   hardware_interface::PositionJointInterface* position_joint_interface_;
   std::vector<hardware_interface::JointHandle> position_joint_handles_;
-  ros::Duration elapsed_time_;
-  std::array<double, 6> initial_pos_{};
-  std::vector<std::string> joint_names_;
-  std::string task_specification_;
 
+  std::array<double, 6> initial_pos_{};
+
+  std::vector<double> joint_position_;
+
+  std::vector<std::string> joint_names_;
+  size_t n_joints_{};
+
+  std::vector<std::string> input_names_;
+  std::vector<std::string> input_types_;
+  size_t n_inputs_{};
+  std::vector<boost::shared_ptr<realtime_tools::RealtimeBuffer<double>>> scalar_input_buffers_;
+
+  std::vector<std::string> output_names_;
+  std::vector<std::string> output_types_;
+  size_t n_outputs_{};
+
+  std::string task_specification_;
   boost::shared_ptr<EtaslDriver> etasl_;
 
-  realtime_tools::RealtimeBuffer<double> command_buffer_;
-
   std::vector<boost::shared_ptr<realtime_tools::RealtimePublisher<std_msgs::Float64>>> realtime_pubs_;
-
-  ros::Subscriber sub_command_;
   std::vector<ros::Subscriber> subs_;
   std::vector<boost::shared_ptr<realtime_tools::RealtimeBuffer<double>>> input_buffers_;
-  void commandCB(const std_msgs::Float64ConstPtr& msg);
 };
 }  // namespace etasl_ros_controllers

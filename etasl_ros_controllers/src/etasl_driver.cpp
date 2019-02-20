@@ -4,8 +4,7 @@
 
 namespace etasl_ros_controllers
 {
-bool EtaslDriver::initializeFeatureVariables(double initialization_time, double sample_time, double convergence_crit,
-                                             DoubleMap& result)
+bool EtaslDriver::initializeFeatureVariables(double initialization_time, double sample_time, double convergence_crit, DoubleMap& result)
 {
   // initialization:
   if (solver_->getNrOfFeatureStates() > 0)
@@ -16,9 +15,7 @@ bool EtaslDriver::initializeFeatureVariables(double initialization_time, double 
       int retval = solver_->updateStep(sample_time);
       if (retval != 0)
       {
-        ROS_ERROR_STREAM(
-            "initialize_feature_variables: solver encountered the following error during initialization (t=" << t
-                                                                                                             << " )");
+        ROS_ERROR_STREAM("initialize_feature_variables: solver encountered the following error during initialization (t=" << t << " )");
         ROS_ERROR_STREAM(solver_->errorMessage(retval));
         ROS_ERROR_STREAM(ctx_);
         return false;
@@ -163,6 +160,21 @@ int EtaslDriver::setJointPos(const DoubleMap& dmap)
   return count;
 }
 
+int EtaslDriver::setJointPos(const std::vector<double>& joint_positions, std::vector<std::string>& joint_names)
+{
+  if (!initialized)
+  {
+    return -1;
+  }
+
+  DoubleMap position_map;
+  std::transform(joint_names.begin(), joint_names.end(), joint_positions.begin(), std::inserter(position_map, position_map.end()),
+                 [](std::string a, double b) { return std::make_pair(a, b); });
+
+  return setJointPos(position_map);
+
+}
+
 int EtaslDriver::getJointVel(DoubleMap& dmap, int flag)
 {
   if (!initialized)
@@ -225,8 +237,8 @@ void EtaslDriver::getOutput(DoubleMap& dmap)
   }
 }
 
-int EtaslDriver::initialize(const DoubleMap& initialval, double initialization_time, double sample_time,
-                            double convergence_crit, DoubleMap& convergedval)
+int EtaslDriver::initialize(const DoubleMap& initialval, double initialization_time, double sample_time, double convergence_crit,
+                            DoubleMap& convergedval)
 {
   if (!etaslread)
     return -5;
@@ -298,12 +310,11 @@ int EtaslDriver::initialize(const DoubleMap& initialval, double initialization_t
   retval = solver_->solve();
   if (retval != 0)
   {
-    ROS_INFO_STREAM("solver encountered the following error during the first solve in initialize \nmessage: "
-                    << solver_->errorMessage(retval).c_str()
-                    << "\n stop() will be called on etasl "
-                       "rtt component and e_error event "
-                       "will be send"
-                    << "\n");
+    ROS_INFO_STREAM("solver encountered the following error during the first solve in initialize \nmessage: " << solver_->errorMessage(retval).c_str()
+                                                                                                              << "\n stop() will be called on etasl "
+                                                                                                                 "rtt component and e_error event "
+                                                                                                                 "will be send"
+                                                                                                              << "\n");
     initialized = false;
     return -4;
   }
@@ -406,8 +417,7 @@ void EtaslDriver::getOutputNames(std::vector<std::string>& name)
   }
 }
 
-void EtaslDriver::getVariables(int flag, std::vector<std::string>& name, std::vector<double>& weight,
-                               std::vector<double>& initval)
+void EtaslDriver::getVariables(int flag, std::vector<std::string>& name, std::vector<double>& weight, std::vector<double>& initval)
 {
   all_ndx.clear();
   if ((flag == 1) || (flag == 3))
