@@ -23,6 +23,9 @@ namespace etasl_ros_controllers
 typedef std::map<std::string, double> DoubleMap;
 typedef std::map<std::string, Frame> FrameMap;
 typedef std::vector<std::string> StringVector;
+using VectorMap = std::map<std::string, Vector>;
+using RotationMap = std::map<std::string, Rotation>;
+using TwistMap = std::map<std::string, Twist>;
 
 class EtaslDriver
 {
@@ -79,6 +82,9 @@ public:
    */
   int setInput(const DoubleMap& dmap);
   int setInput(const FrameMap& fmap);
+  int setInput(const RotationMap& rmap);
+  int setInput(const VectorMap& fmap);
+  int setInput(const TwistMap& tmap);
 
   /**
    * sets all (scalar) variables with the velocity specified in the map as input variable

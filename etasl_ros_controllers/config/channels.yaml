@@ -4,11 +4,15 @@ input:
     - "tgt_y"
     - "tgt_z"
     - "tgt_pose"
+    - "tgt_point"
+    - "tgt_rotation"
   types:
     - "Scalar"
     - "Scalar"
     - "Scalar"
     - "Frame"
+    - "Vector"
+    - "Rotation"
 
 output:
   names:

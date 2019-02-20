@@ -123,6 +123,57 @@ int EtaslDriver::setInput(const FrameMap& fmap)
   return 0;
 }
 
+int EtaslDriver::setInput(const RotationMap& rmap)
+{
+  for (auto item : rmap)
+  {
+    auto v = ctx_->getInputChannel<Rotation>(item.first);
+    if (v)
+    {
+      v->setValue(item.second);
+    }
+    else
+    {
+      return -1;
+    }
+  }
+  return 0;
+}
+
+int EtaslDriver::setInput(const TwistMap& tmap)
+{
+  for (auto item : tmap)
+  {
+    auto v = ctx_->getInputChannel<Twist>(item.first);
+    if (v)
+    {
+      v->setValue(item.second);
+    }
+    else
+    {
+      return -1;
+    }
+  }
+  return 0;
+}
+
+int EtaslDriver::setInput(const VectorMap& vmap)
+{
+  for (auto item : vmap)
+  {
+    auto v = ctx_->getInputChannel<Vector>(item.first);
+    if (v)
+    {
+      v->setValue(item.second);
+    }
+    else
+    {
+      return -1;
+    }
+  }
+  return 0;
+}
+
 int EtaslDriver::setInputVelocity(const DoubleMap& dmap)
 {
   for (DoubleMap::const_iterator it = dmap.begin(); it != dmap.end(); ++it)
@@ -279,9 +330,7 @@ int EtaslDriver::initialize(const DoubleMap& initialval, double initialization_t
   int retval = solver_->prepareInitialization(ctx_);
   if (retval != 0)
   {
-    ROS_INFO_STREAM(" : etasl_rtt::initialize() - prepareInitialization : the taskspecification contains priority "
-                    "levels that the numerical solver "
-                    "can't handle. ");
+    ROS_ERROR_STREAM("EtaslDriver::initialize: The task specification contains priority levels that the numerical solver can't handle");
     return -1;
   }
 

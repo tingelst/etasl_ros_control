@@ -14,11 +14,8 @@
 #include <ros/package.h>
 #include <ros/node_handle.h>
 #include <ros/time.h>
-
 #include <kdl_conversions/kdl_msg.h>
-
 #include <std_msgs/Float64.h>
-#include <geometry_msgs/Pose.h>
 #include <realtime_tools/realtime_publisher.h>
 #include <realtime_tools/realtime_buffer.h>
 
@@ -33,6 +30,9 @@ using namespace KDL;
 namespace etasl_ros_controllers
 {
 using FrameMap = std::map<std::string, Frame>;
+using VectorMap = std::map<std::string, Vector>;
+using RotationMap = std::map<std::string, Rotation>;
+using TwistMap = std::map<std::string, Twist>;
 
 class ExampleController : public controller_interface::MultiInterfaceController<hardware_interface::PositionJointInterface>
 {
@@ -53,6 +53,7 @@ private:
 
   DoubleMap joint_velocity_map_;
 
+  // Inputs
   std::vector<std::string> input_names_;
   std::vector<std::string> input_types_;
   size_t n_inputs_{};
@@ -63,11 +64,28 @@ private:
   std::vector<std::string> scalar_input_names_;
   std::vector<boost::shared_ptr<realtime_tools::RealtimeBuffer<double>>> scalar_input_buffers_;
 
+  VectorMap vector_input_map_;
+  size_t n_vector_inputs_{};
+  std::vector<std::string> vector_input_names_;
+  std::vector<boost::shared_ptr<realtime_tools::RealtimeBuffer<geometry_msgs::Point>>> vector_input_buffers_;
+
+  RotationMap rotation_input_map_;
+  size_t n_rotation_inputs_{};
+  std::vector<std::string> rotation_input_names_;
+  std::vector<boost::shared_ptr<realtime_tools::RealtimeBuffer<geometry_msgs::Quaternion>>> rotation_input_buffers_;
+
   FrameMap frame_input_map_;
   size_t n_frame_inputs_{};
   std::vector<std::string> frame_input_names_;
-  std::vector<boost::shared_ptr<realtime_tools::RealtimeBuffer<Frame>>> frame_input_buffers_;
+  std::vector<boost::shared_ptr<realtime_tools::RealtimeBuffer<geometry_msgs::Pose>>> frame_input_buffers_;
 
+  TwistMap twist_input_map_;
+  size_t n_twist_inputs_{};
+  std::vector<std::string> twist_input_names_;
+  std::vector<boost::shared_ptr<realtime_tools::RealtimeBuffer<geometry_msgs::Twist>>> twist_input_buffers_;
+
+
+  // Outputs
   DoubleMap output_map_;
   std::vector<std::string> output_names_;
   std::vector<std::string> output_types_;
