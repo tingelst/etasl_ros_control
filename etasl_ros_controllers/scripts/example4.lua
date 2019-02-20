@@ -17,19 +17,8 @@ robot_joints = {
     "joint_a6"
 }
 
-maxvel = 0.25
-for i = 1, #robot_joints do
-    BoxConstraint{
-        context = ctx,
-        var_name = robot_joints[i],
-        lower = -maxvel,
-        upper = maxvel
-    }
-end
-
-default_target = Frame(Rotation.RPY(0.0, math.pi, 0.0), Vector(0.7, 0.0, 0.4))
-target = ctx:createInputChannelFrame("target", default_target)
-maxvel = ctx:createInputChannelScalar("maxvel", 0.3)
+default_target = Frame(Rotation.RPY(0.0, math.pi/2, 0.0), Vector(0.7, 0.0, 0.4))
+target = ctx:createInputChannelFrame("tgt_pose", default_target)
 
 Constraint{
     context = ctx,

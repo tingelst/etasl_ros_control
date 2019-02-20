@@ -15,7 +15,9 @@ output:
     - "error_x"
     - "error_y"
     - "error_z"
+    - "out_pose"
   types:
     - "Scalar"
     - "Scalar"
     - "Scalar"
+    - "Frame"

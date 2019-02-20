@@ -13,7 +13,3 @@ example_controller:
     - joint_a4
     - joint_a5
     - joint_a6
-  features:
-    - txt_x
-    - tgt_y
-    - tgt_z

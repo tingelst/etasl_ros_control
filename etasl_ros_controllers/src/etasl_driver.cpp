@@ -254,6 +254,17 @@ void EtaslDriver::getOutput(DoubleMap& dmap)
     }
   }
 }
+void EtaslDriver::getOutput(FrameMap& fmap)
+{
+  for (Context::OutputVarMap::iterator it = ctx_->output_vars.begin(); it != ctx_->output_vars.end(); it++)
+  {
+    Expression<Frame>::Ptr expr = boost::dynamic_pointer_cast<Expression<Frame> >(it->second);
+    if (expr)
+    {
+      fmap[it->first] = expr->value();
+    }
+  }
+}
 
 int EtaslDriver::initialize(const DoubleMap& initialval, double initialization_time, double sample_time, double convergence_crit,
                             DoubleMap& convergedval)

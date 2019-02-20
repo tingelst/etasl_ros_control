@@ -83,3 +83,5 @@ ctx:setOutputExpression("error_z", coord_z(laserspot) - tgt_z)
 ctx:setOutputExpression("laser_x", coord_x(laserspot))
 ctx:setOutputExpression("laser_y", coord_y(laserspot))
 ctx:setOutputExpression("laser_z", coord_z(laserspot))
+
+ctx:setOutputExpression("out_pose", robot_ee * tgt_pose)

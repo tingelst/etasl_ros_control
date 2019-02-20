@@ -56,6 +56,7 @@ private:
   std::vector<std::string> input_names_;
   std::vector<std::string> input_types_;
   size_t n_inputs_{};
+  std::vector<ros::Subscriber> subs_;
 
   DoubleMap scalar_input_map_;
   size_t n_scalar_inputs_{};
@@ -72,11 +73,17 @@ private:
   std::vector<std::string> output_types_;
   size_t n_outputs_{};
 
+  std::vector<std::string> scalar_output_names_;
+  DoubleMap scalar_output_map_;
+  size_t n_scalar_outputs_{};
+  std::vector<boost::shared_ptr<realtime_tools::RealtimePublisher<std_msgs::Float64>>> scalar_realtime_pubs_;
+
+  std::vector<std::string> frame_output_names_;
+  FrameMap frame_output_map_;
+  size_t n_frame_outputs_{};
+  std::vector<boost::shared_ptr<realtime_tools::RealtimePublisher<geometry_msgs::Pose>>> frame_realtime_pubs_;
+
   std::string task_specification_;
   boost::shared_ptr<EtaslDriver> etasl_;
-
-  std::vector<boost::shared_ptr<realtime_tools::RealtimePublisher<std_msgs::Float64>>> realtime_pubs_;
-  std::vector<ros::Subscriber> subs_;
-  std::vector<boost::shared_ptr<realtime_tools::RealtimeBuffer<double>>> input_buffers_;
 };
 }  // namespace etasl_ros_controllers

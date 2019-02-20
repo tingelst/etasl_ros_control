@@ -145,6 +145,8 @@ public:
    * gets all available (scalar) output variables
    */
   void getOutput(DoubleMap& dmap);
+  void getOutput(FrameMap& fmap);
+
   /**
    * reads a task specification file and configures the controller accordingly.
    * can throw a LuaException()

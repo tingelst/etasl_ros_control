@@ -105,7 +105,16 @@ bool ExampleController::init(hardware_interface::RobotHW* robot_hardware, ros::N
     {
       if (output_types_[i] == "Scalar")
       {
-        realtime_pubs_.push_back(boost::make_shared<realtime_tools::RealtimePublisher<std_msgs::Float64>>(node_handle, output_names_[i], 4));
+        ROS_INFO_STREAM("ExampleController: Adding output channel \"" << output_names_[i] << "\" of type \"Scalar\"");
+        scalar_output_names_.push_back(output_names_[i]);
+        scalar_realtime_pubs_.push_back(boost::make_shared<realtime_tools::RealtimePublisher<std_msgs::Float64>>(node_handle, output_names_[i], 4));
+        ++n_scalar_outputs_;
+      }
+      else if (output_types_[i] == "Frame") {
+        ROS_INFO_STREAM("ExampleController: Adding output channel \"" << output_names_[i] << "\" of type \"Frame\"");
+        frame_output_names_.push_back(output_names_[i]);
+        frame_realtime_pubs_.push_back(boost::make_shared<realtime_tools::RealtimePublisher<geometry_msgs::Pose>>(node_handle, output_names_[i], 4));
+        ++n_frame_outputs_;
       }
       else
       {
@@ -174,16 +183,27 @@ void ExampleController::update(const ros::Time& /*time*/, const ros::Duration& p
   }
 
   // Write outputs
-  etasl_->getOutput(output_map_);
-  for (size_t i = 0; i < n_outputs_; i++)
+  etasl_->getOutput(scalar_output_map_);
+  for (size_t i = 0; i < n_scalar_outputs_; i++)
   {
-    if (realtime_pubs_[i]->trylock())
+    if (scalar_realtime_pubs_[i]->trylock())
     {
-      realtime_pubs_[i]->msg_.data = output_map_["global." + output_names_[i]];
-      realtime_pubs_[i]->unlockAndPublish();
+      scalar_realtime_pubs_[i]->msg_.data = scalar_output_map_["global." + scalar_output_names_[i]];
+      scalar_realtime_pubs_[i]->unlockAndPublish();
     }
   }
-}  // namespace etasl_ros_controllers
+
+  etasl_->getOutput(frame_output_map_);
+  for (size_t i = 0; i < n_frame_outputs_; i++)
+  {
+    if (frame_realtime_pubs_[i]->trylock())
+    {
+      Frame frame = frame_output_map_["global." + frame_output_names_[i]];
+      tf::poseKDLToMsg(frame, frame_realtime_pubs_[i]->msg_);
+      frame_realtime_pubs_[i]->unlockAndPublish();
+    }
+  }
+}
 
 }  // namespace etasl_ros_controllers
 
