@@ -6,6 +6,7 @@ input:
     - "tgt_pose"
     - "tgt_point"
     - "tgt_rotation"
+    - "tgt_twist"
   types:
     - "Scalar"
     - "Scalar"
@@ -13,6 +14,7 @@ input:
     - "Frame"
     - "Vector"
     - "Rotation"
+    - "Twist"
 
 output:
   names:
