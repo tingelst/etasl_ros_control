@@ -12,6 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
   expressiongraph_solver_qpoases
   controller_interface
   dynamic_reconfigure
+  kdl_conversions
   geometry_msgs
   hardware_interface
   message_generation
@@ -41,6 +42,7 @@ catkin_package(
     expressiongraph_solver_qpoases
     controller_interface
     dynamic_reconfigure
+    kdl_conversions
     geometry_msgs
     hardware_interface
     message_runtime

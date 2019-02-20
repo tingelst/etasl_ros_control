@@ -55,7 +55,7 @@ EtaslDriver::EtaslDriver(int nWSR, double cputime, double regularization_factor)
   ctx_->addDefaultObserver(obs_);
 
   etaslread = false;
-  initialized = false;
+  initialized_ = false;
   all_ndx.reserve(300);
 }
 
@@ -106,6 +106,23 @@ int EtaslDriver::setInput(const DoubleMap& dmap)
   return 0;
 }
 
+int EtaslDriver::setInput(const FrameMap& fmap)
+{
+  for (auto item : fmap)
+  {
+    auto v = ctx_->getInputChannel<Frame>(item.first);
+    if (v)
+    {
+      v->setValue(item.second);
+    }
+    else
+    {
+      return -1;
+    }
+  }
+  return 0;
+}
+
 int EtaslDriver::setInputVelocity(const DoubleMap& dmap)
 {
   for (DoubleMap::const_iterator it = dmap.begin(); it != dmap.end(); ++it)
@@ -125,7 +142,7 @@ int EtaslDriver::setInputVelocity(const DoubleMap& dmap)
 
 int EtaslDriver::setJointPos(const DoubleMap& dmap)
 {
-  if (!initialized)
+  if (!initialized_)
   {
     return -1;
   }
@@ -162,7 +179,7 @@ int EtaslDriver::setJointPos(const DoubleMap& dmap)
 
 int EtaslDriver::setJointPos(const std::vector<double>& joint_positions, std::vector<std::string>& joint_names)
 {
-  if (!initialized)
+  if (!initialized_)
   {
     return -1;
   }
@@ -172,13 +189,14 @@ int EtaslDriver::setJointPos(const std::vector<double>& joint_positions, std::ve
                  [](std::string a, double b) { return std::make_pair(a, b); });
 
   return setJointPos(position_map);
-
 }
 
 int EtaslDriver::getJointVel(DoubleMap& dmap, int flag)
 {
-  if (!initialized)
+  if (!initialized_)
+  {
     return -1;
+  }
   solver_->getJointVelocities(joint_velocities_);
   solver_->getFeatureVelocities(feature_velocities_);
   dmap.clear();
@@ -202,7 +220,7 @@ int EtaslDriver::getJointVel(DoubleMap& dmap, int flag)
 
 int EtaslDriver::getJointPos(DoubleMap& dmap, int flag)
 {
-  if (!initialized)
+  if (!initialized_)
     return -1;
   solver_->getJointStates(joint_values_);
   solver_->getFeatureStates(feature_values_);
@@ -267,14 +285,14 @@ int EtaslDriver::initialize(const DoubleMap& initialval, double initialization_t
   solver_->getJointStates(joint_values_);
   solver_->getFeatureStates(feature_values_);
   solver_->setTime(0.0);
-  initialized = true;
+  initialized_ = true;
 
   setJointPos(initialval);
 
   // performs optimization and writes the result in the "initial" field in the context.
   if (!initializeFeatureVariables(initialization_time, sample_time, convergence_crit, convergedval))
   {
-    initialized = false;
+    initialized_ = false;
     return -2;
   }
 
@@ -286,7 +304,7 @@ int EtaslDriver::initialize(const DoubleMap& initialval, double initialization_t
     ROS_INFO_STREAM(" : etasl_rtt::initialize() - prepareExecution : the taskspecification contains priority levels "
                     "that the numerical solver can't "
                     "handle. ");
-    initialized = false;
+    initialized_ = false;
     return -3;
   }
 
@@ -303,7 +321,7 @@ int EtaslDriver::initialize(const DoubleMap& initialval, double initialization_t
   solver_->setTime(0.0);
   ctx_->resetMonitors();
   ctx_->clearFinishStatus();
-  initialized = true;
+  initialized_ = true;
 
   setJointPos(convergedval);
 
@@ -315,7 +333,7 @@ int EtaslDriver::initialize(const DoubleMap& initialval, double initialization_t
                                                                                                                  "rtt component and e_error event "
                                                                                                                  "will be send"
                                                                                                               << "\n");
-    initialized = false;
+    initialized_ = false;
     return -4;
   }
   return 0;
@@ -357,7 +375,7 @@ EtaslDriver::~EtaslDriver()
 
 int EtaslDriver::nrOfFeatureVar()
 {
-  if (initialized)
+  if (initialized_)
   {
     return feature_values_.size();
   }
@@ -369,7 +387,7 @@ int EtaslDriver::nrOfFeatureVar()
 
 int EtaslDriver::nrOfRobotVar()
 {
-  if (initialized)
+  if (initialized_)
   {
     return joint_values_.size();
   }

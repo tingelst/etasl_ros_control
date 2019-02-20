@@ -21,13 +21,14 @@ using namespace KDL;
 namespace etasl_ros_controllers
 {
 typedef std::map<std::string, double> DoubleMap;
+typedef std::map<std::string, Frame> FrameMap;
 typedef std::vector<std::string> StringVector;
 
 class EtaslDriver
 {
   boost::shared_ptr<qpOASESSolver> solver_;
   bool etaslread;
-  bool initialized;
+  bool initialized_;
   boost::shared_ptr<Context> ctx_;
   boost::shared_ptr<LuaContext> lua;
   boost::shared_ptr<Observer> obs_;
@@ -77,6 +78,7 @@ public:
    *  inputchannel of wrong type).
    */
   int setInput(const DoubleMap& dmap);
+  int setInput(const FrameMap& fmap);
 
   /**
    * sets all (scalar) variables with the velocity specified in the map as input variable

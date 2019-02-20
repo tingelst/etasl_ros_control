@@ -19,6 +19,7 @@
 
   <depend>controller_interface</depend>
   <depend>dynamic_reconfigure</depend>
+  <depend>kdl_conversions</depend>
   <depend>geometry_msgs</depend>
   <depend>hardware_interface</depend>
   <depend>pluginlib</depend>

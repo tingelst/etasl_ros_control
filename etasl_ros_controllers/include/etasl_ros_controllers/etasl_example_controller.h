@@ -15,7 +15,10 @@
 #include <ros/node_handle.h>
 #include <ros/time.h>
 
+#include <kdl_conversions/kdl_msg.h>
+
 #include <std_msgs/Float64.h>
+#include <geometry_msgs/Pose.h>
 #include <realtime_tools/realtime_publisher.h>
 #include <realtime_tools/realtime_buffer.h>
 
@@ -29,6 +32,8 @@ using namespace KDL;
 
 namespace etasl_ros_controllers
 {
+using FrameMap = std::map<std::string, Frame>;
+
 class ExampleController : public controller_interface::MultiInterfaceController<hardware_interface::PositionJointInterface>
 {
 public:
@@ -42,16 +47,27 @@ private:
 
   std::array<double, 6> initial_pos_{};
 
-  std::vector<double> joint_position_;
-
+  DoubleMap joint_position_map_;
   std::vector<std::string> joint_names_;
   size_t n_joints_{};
+
+  DoubleMap joint_velocity_map_;
 
   std::vector<std::string> input_names_;
   std::vector<std::string> input_types_;
   size_t n_inputs_{};
+
+  DoubleMap scalar_input_map_;
+  size_t n_scalar_inputs_{};
+  std::vector<std::string> scalar_input_names_;
   std::vector<boost::shared_ptr<realtime_tools::RealtimeBuffer<double>>> scalar_input_buffers_;
 
+  FrameMap frame_input_map_;
+  size_t n_frame_inputs_{};
+  std::vector<std::string> frame_input_names_;
+  std::vector<boost::shared_ptr<realtime_tools::RealtimeBuffer<Frame>>> frame_input_buffers_;
+
+  DoubleMap output_map_;
   std::vector<std::string> output_names_;
   std::vector<std::string> output_types_;
   size_t n_outputs_{};

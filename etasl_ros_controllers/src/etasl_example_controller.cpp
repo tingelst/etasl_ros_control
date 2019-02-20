@@ -27,7 +27,6 @@ bool ExampleController::init(hardware_interface::RobotHW* robot_hardware, ros::N
     ROS_ERROR("ExampleController: Could not parse joint names");
   }
   n_joints_ = joint_names_.size();
-  joint_position_.resize(n_joints_);
   position_joint_handles_.resize(n_joints_);
   for (size_t i = 0; i < n_joints_; ++i)
   {
@@ -54,14 +53,31 @@ bool ExampleController::init(hardware_interface::RobotHW* robot_hardware, ros::N
 
     for (size_t i = 0; i < n_inputs_; ++i)
     {
-      if (input_types_[i] == "scalar")
+      if (input_types_[i] == "Scalar")
       {
+        ROS_INFO_STREAM("ExampleController: Adding input channel \"" << input_names_[i] << "\" of type \"Scalar\"");
+        scalar_input_names_.push_back(input_names_[i]);
         auto input_buffer = boost::make_shared<realtime_tools::RealtimeBuffer<double>>();
         boost::function<void(const std_msgs::Float64ConstPtr&)> callback = [input_buffer](const std_msgs::Float64ConstPtr& msg) {
           input_buffer->writeFromNonRT(msg->data);
         };
         subs_.push_back(node_handle.subscribe<std_msgs::Float64>(input_names_[i], 1, callback));
         scalar_input_buffers_.push_back(input_buffer);
+        ++n_scalar_inputs_;
+      }
+      else if (input_types_[i] == "Frame")
+      {
+        ROS_INFO_STREAM("ExampleController: Adding input channel \"" << input_names_[i] << "\" of type \"Frame\"");
+        frame_input_names_.push_back(input_names_[i]);
+        auto input_buffer = boost::make_shared<realtime_tools::RealtimeBuffer<Frame>>();
+        boost::function<void(const geometry_msgs::PoseConstPtr&)> callback = [input_buffer](const geometry_msgs::PoseConstPtr& msg) {
+          Frame frame;
+          tf::poseMsgToKDL(*msg, frame);
+          input_buffer->writeFromNonRT(frame);
+        };
+        subs_.push_back(node_handle.subscribe<geometry_msgs::Pose>(input_names_[i], 1, callback));
+        frame_input_buffers_.push_back(input_buffer);
+        ++n_frame_inputs_;
       }
       else
       {
@@ -87,7 +103,7 @@ bool ExampleController::init(hardware_interface::RobotHW* robot_hardware, ros::N
 
     for (size_t i = 0; i < n_outputs_; ++i)
     {
-      if (output_types_[i] == "scalar")
+      if (output_types_[i] == "Scalar")
       {
         realtime_pubs_.push_back(boost::make_shared<realtime_tools::RealtimePublisher<std_msgs::Float64>>(node_handle, output_names_[i], 4));
       }
@@ -116,60 +132,58 @@ bool ExampleController::init(hardware_interface::RobotHW* robot_hardware, ros::N
 
 void ExampleController::starting(const ros::Time& /* time */)
 {
-  for (size_t i = 0; i < 6; ++i)
+  for (size_t i = 0; i < n_joints_; ++i)
   {
-    initial_pos_[i] = position_joint_handles_[i].getPosition();
+    joint_position_map_[joint_names_[i]] = position_joint_handles_[i].getPosition();
   }
 
-  DoubleMap initial_position_map;
-  std::transform(joint_names_.begin(), joint_names_.end(), initial_pos_.begin(), std::inserter(initial_position_map, initial_position_map.end()),
-                 [](std::string a, double b) { return std::make_pair(a, b); });
-
   DoubleMap converged_values_map;
-  etasl_->initialize(initial_position_map, 3.0, 0.004, 1E-4, converged_values_map);
+  etasl_->initialize(joint_position_map_, 3.0, 0.004, 1E-4, converged_values_map);
 }
 
 void ExampleController::update(const ros::Time& /*time*/, const ros::Duration& period)
 {
-  DoubleMap joint_position_map;
+  // Read joint positions from hardware interface
   for (size_t i = 0; i < n_joints_; ++i)
   {
-    joint_position_[i] = position_joint_handles_[i].getPosition();
-    joint_position_map[joint_names_[i]] = joint_position_[i];
+    joint_position_map_[joint_names_[i]] = position_joint_handles_[i].getPosition();
   }
-  etasl_->setJointPos(joint_position_map);
+  etasl_->setJointPos(joint_position_map_);
 
-  DoubleMap input_map;
-  for (size_t i = 0; i < n_inputs_; i++)
+  // Read inputs
+  for (size_t i = 0; i < n_scalar_inputs_; i++)
   {
-    input_map["global." + input_names_[i]] = *scalar_input_buffers_[i]->readFromNonRT();
+    scalar_input_map_["global." + scalar_input_names_[i]] = *scalar_input_buffers_[i]->readFromRT();
   }
-  etasl_->setInput(input_map);
+  etasl_->setInput(scalar_input_map_);
 
+  for (size_t i = 0; i < n_frame_inputs_; i++)
+  {
+    frame_input_map_["global." + frame_input_names_[i]] = *frame_input_buffers_[i]->readFromRT();
+  }
+  etasl_->setInput(frame_input_map_);
+
+  // Solve the optimization problem
   etasl_->solve();
 
-  DoubleMap velocity_map;
-  etasl_->getJointVel(velocity_map);
-
-  for (size_t i = 0; i < 6; ++i)
+  // Get computed joint velocity, integrate, and set joint position command
+  etasl_->getJointVel(joint_velocity_map_);
+  for (size_t i = 0; i < n_joints_; ++i)
   {
-    position_joint_handles_[i].setCommand(joint_position_[i] + velocity_map[joint_names_[i]] * period.toSec());
+    position_joint_handles_[i].setCommand(joint_position_map_[joint_names_[i]] + joint_velocity_map_[joint_names_[i]] * period.toSec());
   }
 
-  StringVector output_names;
-  etasl_->getOutputNames(output_names);
-  DoubleMap output_map{};
-  etasl_->getOutput(output_map);
-
+  // Write outputs
+  etasl_->getOutput(output_map_);
   for (size_t i = 0; i < n_outputs_; i++)
   {
     if (realtime_pubs_[i]->trylock())
     {
-      realtime_pubs_[i]->msg_.data = output_map["global." + output_names_[i]];
+      realtime_pubs_[i]->msg_.data = output_map_["global." + output_names_[i]];
       realtime_pubs_[i]->unlockAndPublish();
     }
   }
-}
+}  // namespace etasl_ros_controllers
 
 }  // namespace etasl_ros_controllers
 

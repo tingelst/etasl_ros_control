@@ -3,10 +3,12 @@ input:
     - "tgt_x"
     - "tgt_y"
     - "tgt_z"
+    - "tgt_pose"
   types:
-    - "scalar"
-    - "scalar"
-    - "scalar"
+    - "Scalar"
+    - "Scalar"
+    - "Scalar"
+    - "Frame"
 
 output:
   names:
@@ -14,6 +16,6 @@ output:
     - "error_y"
     - "error_z"
   types:
-    - "scalar"
-    - "scalar"
-    - "scalar"
+    - "Scalar"
+    - "Scalar"
+    - "Scalar"

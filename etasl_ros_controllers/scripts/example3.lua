@@ -40,6 +40,8 @@ tgt_x = ctx:createInputChannelScalar("tgt_x", 0.5)
 tgt_y = ctx:createInputChannelScalar("tgt_y", 0)
 tgt_z = ctx:createInputChannelScalar("tgt_z", 0)
 
+tgt_pose = ctx:createInputChannelFrame("tgt_pose")
+
 d = Variable{context = ctx, name = "d", vartype = "feature"}
 
 Constraint{
@@ -51,7 +53,7 @@ Constraint{
     K = 4
 }
 
-laserspot = robot_ee * vector(0, 0, d)
+laserspot = robot_ee * tgt_pose * vector(0, 0, d)
 
 Constraint{
     context = ctx,
