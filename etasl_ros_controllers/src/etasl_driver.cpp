@@ -43,8 +43,6 @@ bool EtaslDriver::initializeFeatureVariables(double initialization_time, double 
 
 EtaslDriver::EtaslDriver(int nWSR, double cputime, double regularization_factor)
 {
-  /*ROS_INFO_STREAM( "constructor EtaslDriver" );*/
-
   ctx_ = boost::make_shared<Context>();
   ctx_->addType("robot");
   ctx_->addType("feature");
@@ -73,24 +71,6 @@ void EtaslDriver::readTaskSpecificationString(const std::string& taskspec)
   lua->executeString(taskspec);
   etaslread = true;
 }
-
-// int EtaslDriver::setInput(const DoubleMap& dmap)
-// {
-//   for (DoubleMap::const_iterator it = dmap.begin(); it != dmap.end(); ++it)
-//   {
-//     // ROS_INFO_STREAM( it->first << "\t=\t" << it->second );
-//     VariableType<double>::Ptr v = ctx_->getInputChannel<double>(it->first);
-//     if (v)
-//     {
-//       v->setValue(it->second);
-//     }
-//     else
-//     {
-//       return -1;
-//     }
-//   }
-//   return 0;
-// }
 
 int EtaslDriver::setInput(const DoubleMap& dmap)
 {
@@ -560,10 +540,5 @@ void EtaslDriver::getVariables(int flag, std::vector<std::string>& name, std::ve
     initval[i] = vs->initial_value;
   }
 }
-
-// std::string EtaslDriver::describeContext()
-// {
-//   return lua->describeContext();
-// }
 
 }  // namespace etasl_ros_controllers
