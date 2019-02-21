@@ -3,7 +3,7 @@ joint_state_controller:
   type: joint_state_controller/JointStateController
   publish_rate: 50
 
-# Joint trajectory controller
+# eTaSl example controller
 example_controller:
   type: "etasl_ros_controllers/ExampleController"
   joints:

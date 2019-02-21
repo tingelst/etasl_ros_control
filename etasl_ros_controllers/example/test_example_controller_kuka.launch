@@ -5,10 +5,9 @@
     <include file="$(find kuka_kr6_support)/launch/load_kr6r900sixx.launch" />
 
     <group ns="etasl">
-        <param name="task_specification" command="cat '$(find etasl_ros_controllers)/scripts/example3.lua'"/>
-        <rosparam file="$(find etasl_ros_controllers)/config/solver.yaml" command="load"/>
-        <rosparam file="$(find etasl_ros_controllers)/config/channels.yaml" command="load"/>
-        <rosparam file="$(find etasl_ros_controllers)/config/joint_names.yaml" command="load"/>
+        <param name="task_specification" command="cat '$(find etasl_ros_controllers)/example/example3.lua'"/>
+        <rosparam file="$(find etasl_ros_controllers)/example/channels.yaml" command="load"/>
+        <rosparam file="$(find etasl_ros_controllers)/example/joint_names.yaml" command="load"/>
     </group>
 
     <rosparam file="$(find kuka_rsi_hw_interface)/test/test_params_sim.yaml" command="load" if="$(arg sim)"/>
@@ -17,8 +16,8 @@
     <node name="kuka_hardware_interface" pkg="kuka_rsi_hw_interface" type="kuka_hardware_interface_node" respawn="false" output="screen" required="true"/>
 
     <!-- Load controllers -->
-    <rosparam file="$(find etasl_ros_controllers)/launch/hardware_controllers.yaml" command="load"/>
-    <rosparam file="$(find etasl_ros_controllers)/launch/controller_joint_names.yaml" command="load"/>
+    <rosparam file="$(find etasl_ros_controllers)/example/hardware_controllers.yaml" command="load"/>
+    <rosparam file="$(find etasl_ros_controllers)/example/controller_joint_names.yaml" command="load"/>
     <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false" output="screen" args="example_controller joint_state_controller"/>
 
     <!-- Load robot state publisher -->
