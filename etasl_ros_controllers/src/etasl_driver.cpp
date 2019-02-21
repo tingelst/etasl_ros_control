@@ -403,9 +403,8 @@ int EtaslDriver::initialize(const DoubleMap& initialval, double initialization_t
   retval = solver_->prepareExecution(ctx_);
   if (retval != 0)
   {
-    ROS_INFO_STREAM(" : etasl_rtt::initialize() - prepareExecution : the taskspecification contains priority levels "
-                    "that the numerical solver can't "
-                    "handle. ");
+    ROS_ERROR_STREAM("EtaslDriver::initialize (prepareExecution): The task specification contains priority levels that "
+                     "the numerical solver can't handle");
     initialized_ = false;
     return -3;
   }
