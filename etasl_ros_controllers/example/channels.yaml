@@ -3,33 +3,17 @@ input:
     - "tgt_x"
     - "tgt_y"
     - "tgt_z"
-    - "tgt_pose"
-    - "tgt_point"
-    - "tgt_rotation"
-    - "tgt_twist"
   types:
     - "Scalar"
     - "Scalar"
     - "Scalar"
-    - "Frame"
-    - "Vector"
-    - "Rotation"
-    - "Twist"
 
 output:
   names:
     - "error_x"
     - "error_y"
     - "error_z"
-    - "out_pose"
-    - "out_point"
-    - "out_rotation"
-    - "out_twist"
   types:
     - "Scalar"
     - "Scalar"
     - "Scalar"
-    - "Frame"
-    - "Vector"
-    - "Rotation"
-    - "Twist"

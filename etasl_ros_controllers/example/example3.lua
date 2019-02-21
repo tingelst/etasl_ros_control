@@ -40,8 +40,6 @@ tgt_x = ctx:createInputChannelScalar("tgt_x", 0.5)
 tgt_y = ctx:createInputChannelScalar("tgt_y", 0)
 tgt_z = ctx:createInputChannelScalar("tgt_z", 0)
 
-tgt_pose = ctx:createInputChannelFrame("tgt_pose")
-
 d = Variable{context = ctx, name = "d", vartype = "feature"}
 
 Constraint{
@@ -80,8 +78,3 @@ Constraint{
 ctx:setOutputExpression("error_x", coord_x(laserspot) - tgt_x)
 ctx:setOutputExpression("error_y", coord_y(laserspot) - tgt_y)
 ctx:setOutputExpression("error_z", coord_z(laserspot) - tgt_z)
-ctx:setOutputExpression("laser_x", coord_x(laserspot))
-ctx:setOutputExpression("laser_y", coord_y(laserspot))
-ctx:setOutputExpression("laser_z", coord_z(laserspot))
-
-ctx:setOutputExpression("out_pose", robot_ee)
