@@ -151,7 +151,10 @@ public:
    * gets all available (scalar) output variables
    */
   void getOutput(DoubleMap& dmap);
+  void getOutput(VectorMap& fmap);
+  void getOutput(RotationMap& rmap);
   void getOutput(FrameMap& fmap);
+  void getOutput(TwistMap& tmap);
 
   /**
    * reads a task specification file and configures the controller accordingly.

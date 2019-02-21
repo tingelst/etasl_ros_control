@@ -305,6 +305,7 @@ void EtaslDriver::getOutput(DoubleMap& dmap)
     }
   }
 }
+
 void EtaslDriver::getOutput(FrameMap& fmap)
 {
   for (Context::OutputVarMap::iterator it = ctx_->output_vars.begin(); it != ctx_->output_vars.end(); it++)
@@ -313,6 +314,42 @@ void EtaslDriver::getOutput(FrameMap& fmap)
     if (expr)
     {
       fmap[it->first] = expr->value();
+    }
+  }
+}
+
+void EtaslDriver::getOutput(VectorMap& vmap)
+{
+  for (Context::OutputVarMap::iterator it = ctx_->output_vars.begin(); it != ctx_->output_vars.end(); it++)
+  {
+    Expression<Vector>::Ptr expr = boost::dynamic_pointer_cast<Expression<Vector> >(it->second);
+    if (expr)
+    {
+      vmap[it->first] = expr->value();
+    }
+  }
+}
+
+void EtaslDriver::getOutput(RotationMap& rmap)
+{
+  for (Context::OutputVarMap::iterator it = ctx_->output_vars.begin(); it != ctx_->output_vars.end(); it++)
+  {
+    Expression<Rotation>::Ptr expr = boost::dynamic_pointer_cast<Expression<Rotation> >(it->second);
+    if (expr)
+    {
+      rmap[it->first] = expr->value();
+    }
+  }
+}
+
+void EtaslDriver::getOutput(TwistMap& tmap)
+{
+  for (Context::OutputVarMap::iterator it = ctx_->output_vars.begin(); it != ctx_->output_vars.end(); it++)
+  {
+    Expression<Twist>::Ptr expr = boost::dynamic_pointer_cast<Expression<Twist> >(it->second);
+    if (expr)
+    {
+      tmap[it->first] = expr->value();
     }
   }
 }

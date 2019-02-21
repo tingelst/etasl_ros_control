@@ -45,7 +45,9 @@ private:
   hardware_interface::PositionJointInterface* position_joint_interface_;
   std::vector<hardware_interface::JointHandle> position_joint_handles_;
 
-  std::array<double, 6> initial_pos_{};
+  void solve();
+  void getInput();
+  void setOutput();
 
   DoubleMap joint_position_map_;
   std::vector<std::string> joint_names_;
@@ -84,7 +86,6 @@ private:
   std::vector<std::string> twist_input_names_;
   std::vector<boost::shared_ptr<realtime_tools::RealtimeBuffer<geometry_msgs::Twist>>> twist_input_buffers_;
 
-
   // Outputs
   DoubleMap output_map_;
   std::vector<std::string> output_names_;
@@ -96,10 +97,25 @@ private:
   size_t n_scalar_outputs_{};
   std::vector<boost::shared_ptr<realtime_tools::RealtimePublisher<std_msgs::Float64>>> scalar_realtime_pubs_;
 
+  std::vector<std::string> vector_output_names_;
+  VectorMap vector_output_map_;
+  size_t n_vector_outputs_{};
+  std::vector<boost::shared_ptr<realtime_tools::RealtimePublisher<geometry_msgs::Point>>> vector_realtime_pubs_;
+
+  std::vector<std::string> rotation_output_names_;
+  RotationMap rotation_output_map_;
+  size_t n_rotation_outputs_{};
+  std::vector<boost::shared_ptr<realtime_tools::RealtimePublisher<geometry_msgs::Quaternion>>> rotation_realtime_pubs_;
+
   std::vector<std::string> frame_output_names_;
   FrameMap frame_output_map_;
   size_t n_frame_outputs_{};
   std::vector<boost::shared_ptr<realtime_tools::RealtimePublisher<geometry_msgs::Pose>>> frame_realtime_pubs_;
+
+  std::vector<std::string> twist_output_names_;
+  TwistMap twist_output_map_;
+  size_t n_twist_outputs_{};
+  std::vector<boost::shared_ptr<realtime_tools::RealtimePublisher<geometry_msgs::Twist>>> twist_realtime_pubs_;
 
   std::string task_specification_;
   boost::shared_ptr<EtaslDriver> etasl_;

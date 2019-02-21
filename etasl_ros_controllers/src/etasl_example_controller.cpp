@@ -132,6 +132,7 @@ bool ExampleController::init(hardware_interface::RobotHW* robot_hardware, ros::N
       ROS_ERROR_STREAM("ExampleController: The number of output names and output types must be the same");
       return false;
     }
+
     n_outputs_ = output_names_.size();
     ROS_INFO_STREAM("ExampleController: Found " << n_outputs_ << " output channels");
 
@@ -144,12 +145,35 @@ bool ExampleController::init(hardware_interface::RobotHW* robot_hardware, ros::N
         scalar_realtime_pubs_.push_back(boost::make_shared<realtime_tools::RealtimePublisher<std_msgs::Float64>>(node_handle, output_names_[i], 4));
         ++n_scalar_outputs_;
       }
+      else if (output_types_[i] == "Vector")
+      {
+        ROS_INFO_STREAM("ExampleController: Adding output channel \"" << output_names_[i] << "\" of type \"Vector\"");
+        vector_output_names_.push_back(output_names_[i]);
+        vector_realtime_pubs_.push_back(
+            boost::make_shared<realtime_tools::RealtimePublisher<geometry_msgs::Point>>(node_handle, output_names_[i], 4));
+        ++n_vector_outputs_;
+      }
+      else if (output_types_[i] == "Rotation")
+      {
+        ROS_INFO_STREAM("ExampleController: Adding output channel \"" << output_names_[i] << "\" of type \"Rotation\"");
+        rotation_output_names_.push_back(output_names_[i]);
+        rotation_realtime_pubs_.push_back(
+            boost::make_shared<realtime_tools::RealtimePublisher<geometry_msgs::Quaternion>>(node_handle, output_names_[i], 4));
+        ++n_rotation_outputs_;
+      }
       else if (output_types_[i] == "Frame")
       {
         ROS_INFO_STREAM("ExampleController: Adding output channel \"" << output_names_[i] << "\" of type \"Frame\"");
         frame_output_names_.push_back(output_names_[i]);
         frame_realtime_pubs_.push_back(boost::make_shared<realtime_tools::RealtimePublisher<geometry_msgs::Pose>>(node_handle, output_names_[i], 4));
         ++n_frame_outputs_;
+      }
+      else if (output_types_[i] == "Twist")
+      {
+        ROS_INFO_STREAM("ExampleController: Adding output channel \"" << output_names_[i] << "\" of type \"Twist\"");
+        twist_output_names_.push_back(output_names_[i]);
+        twist_realtime_pubs_.push_back(boost::make_shared<realtime_tools::RealtimePublisher<geometry_msgs::Twist>>(node_handle, output_names_[i], 4));
+        ++n_twist_outputs_;
       }
       else
       {
@@ -190,51 +214,15 @@ void ExampleController::starting(const ros::Time& /* time */)
 
 void ExampleController::update(const ros::Time& /*time*/, const ros::Duration& period)
 {
+  // Read from input channels
+  getInput();
+
   // Read joint positions from hardware interface
   for (size_t i = 0; i < n_joints_; ++i)
   {
     joint_position_map_[joint_names_[i]] = position_joint_handles_[i].getPosition();
   }
   etasl_->setJointPos(joint_position_map_);
-
-  // Read inputs
-  for (size_t i = 0; i < n_scalar_inputs_; i++)
-  {
-    scalar_input_map_["global." + scalar_input_names_[i]] = *scalar_input_buffers_[i]->readFromRT();
-  }
-  etasl_->setInput(scalar_input_map_);
-
-  for (size_t i = 0; i < n_vector_inputs_; i++)
-  {
-    Vector vector;
-    tf::pointMsgToKDL(*vector_input_buffers_[i]->readFromRT(), vector);
-    vector_input_map_["global." + vector_input_names_[i]] = vector;
-  }
-  etasl_->setInput(vector_input_map_);
-
-  for (size_t i = 0; i < n_rotation_inputs_; i++)
-  {
-    Rotation rotation;
-    tf::quaternionMsgToKDL(*rotation_input_buffers_[i]->readFromRT(), rotation);
-    rotation_input_map_["global." + rotation_input_names_[i]] = rotation;
-  }
-  etasl_->setInput(rotation_input_map_);
-
-  for (size_t i = 0; i < n_frame_inputs_; i++)
-  {
-    Frame frame;
-    tf::poseMsgToKDL(*frame_input_buffers_[i]->readFromRT(), frame);
-    frame_input_map_["global." + frame_input_names_[i]] = frame;
-  }
-  etasl_->setInput(frame_input_map_);
-
-  for (size_t i = 0; i < n_twist_inputs_; i++)
-  {
-    Twist twist;
-    tf::twistMsgToKDL(*twist_input_buffers_[i]->readFromRT(), twist);
-    twist_input_map_["global." + twist_input_names_[i]] = twist;
-  }
-  etasl_->setInput(twist_input_map_);
 
   // Solve the optimization problem
   etasl_->solve();
@@ -246,25 +234,135 @@ void ExampleController::update(const ros::Time& /*time*/, const ros::Duration& p
     position_joint_handles_[i].setCommand(joint_position_map_[joint_names_[i]] + joint_velocity_map_[joint_names_[i]] * period.toSec());
   }
 
-  // Write outputs
-  etasl_->getOutput(scalar_output_map_);
-  for (size_t i = 0; i < n_scalar_outputs_; i++)
+  // Write to output channels
+  setOutput();
+}
+
+void ExampleController::getInput()
+{
+  // Read inputs
+  if (n_scalar_inputs_ > 0)
   {
-    if (scalar_realtime_pubs_[i]->trylock())
+    for (size_t i = 0; i < n_scalar_inputs_; i++)
     {
-      scalar_realtime_pubs_[i]->msg_.data = scalar_output_map_["global." + scalar_output_names_[i]];
-      scalar_realtime_pubs_[i]->unlockAndPublish();
+      scalar_input_map_["global." + scalar_input_names_[i]] = *scalar_input_buffers_[i]->readFromRT();
+    }
+    etasl_->setInput(scalar_input_map_);
+  }
+
+  if (n_vector_inputs_ > 0)
+  {
+    for (size_t i = 0; i < n_vector_inputs_; i++)
+    {
+      Vector vector;
+      tf::pointMsgToKDL(*vector_input_buffers_[i]->readFromRT(), vector);
+      vector_input_map_["global." + vector_input_names_[i]] = vector;
+    }
+    etasl_->setInput(vector_input_map_);
+  }
+
+  if (n_rotation_inputs_ > 0)
+  {
+    for (size_t i = 0; i < n_rotation_inputs_; i++)
+    {
+      Rotation rotation;
+      tf::quaternionMsgToKDL(*rotation_input_buffers_[i]->readFromRT(), rotation);
+      rotation_input_map_["global." + rotation_input_names_[i]] = rotation;
+    }
+    etasl_->setInput(rotation_input_map_);
+  }
+
+  if (n_frame_inputs_ > 0)
+  {
+    for (size_t i = 0; i < n_frame_inputs_; i++)
+    {
+      Frame frame;
+      tf::poseMsgToKDL(*frame_input_buffers_[i]->readFromRT(), frame);
+      frame_input_map_["global." + frame_input_names_[i]] = frame;
+    }
+    etasl_->setInput(frame_input_map_);
+  }
+
+  if (n_twist_inputs_ > 0)
+  {
+    for (size_t i = 0; i < n_twist_inputs_; i++)
+    {
+      Twist twist;
+      tf::twistMsgToKDL(*twist_input_buffers_[i]->readFromRT(), twist);
+      twist_input_map_["global." + twist_input_names_[i]] = twist;
+    }
+    etasl_->setInput(twist_input_map_);
+  }
+}
+
+void ExampleController::setOutput()
+{
+  if (n_scalar_outputs_ > 0)
+  {
+    etasl_->getOutput(scalar_output_map_);
+    for (size_t i = 0; i < n_scalar_outputs_; i++)
+    {
+      if (scalar_realtime_pubs_[i]->trylock())
+      {
+        scalar_realtime_pubs_[i]->msg_.data = scalar_output_map_["global." + scalar_output_names_[i]];
+        scalar_realtime_pubs_[i]->unlockAndPublish();
+      }
     }
   }
 
-  etasl_->getOutput(frame_output_map_);
-  for (size_t i = 0; i < n_frame_outputs_; i++)
+  if (n_vector_outputs_ > 0)
   {
-    if (frame_realtime_pubs_[i]->trylock())
+    etasl_->getOutput(vector_output_map_);
+    for (size_t i = 0; i < n_vector_outputs_; i++)
     {
-      Frame frame = frame_output_map_["global." + frame_output_names_[i]];
-      tf::poseKDLToMsg(frame, frame_realtime_pubs_[i]->msg_);
-      frame_realtime_pubs_[i]->unlockAndPublish();
+      if (vector_realtime_pubs_[i]->trylock())
+      {
+        Vector vector = vector_output_map_["global." + vector_output_names_[i]];
+        tf::pointKDLToMsg(vector, vector_realtime_pubs_[i]->msg_);
+        vector_realtime_pubs_[i]->unlockAndPublish();
+      }
+    }
+  }
+
+  if (n_rotation_outputs_ > 0)
+  {
+    etasl_->getOutput(rotation_output_map_);
+    for (size_t i = 0; i < n_rotation_outputs_; i++)
+    {
+      if (rotation_realtime_pubs_[i]->trylock())
+      {
+        Rotation rotation = rotation_output_map_["global." + rotation_output_names_[i]];
+        tf::quaternionKDLToMsg(rotation, rotation_realtime_pubs_[i]->msg_);
+        rotation_realtime_pubs_[i]->unlockAndPublish();
+      }
+    }
+  }
+
+  if (n_frame_outputs_ > 0)
+  {
+    etasl_->getOutput(frame_output_map_);
+    for (size_t i = 0; i < n_frame_outputs_; i++)
+    {
+      if (frame_realtime_pubs_[i]->trylock())
+      {
+        Frame frame = frame_output_map_["global." + frame_output_names_[i]];
+        tf::poseKDLToMsg(frame, frame_realtime_pubs_[i]->msg_);
+        frame_realtime_pubs_[i]->unlockAndPublish();
+      }
+    }
+  }
+
+  if (n_twist_outputs_ > 0)
+  {
+    etasl_->getOutput(twist_output_map_);
+    for (size_t i = 0; i < n_twist_outputs_; i++)
+    {
+      if (twist_realtime_pubs_[i]->trylock())
+      {
+        Twist twist = twist_output_map_["global." + twist_output_names_[i]];
+        tf::twistKDLToMsg(twist, twist_realtime_pubs_[i]->msg_);
+        twist_realtime_pubs_[i]->unlockAndPublish();
+      }
     }
   }
 }
