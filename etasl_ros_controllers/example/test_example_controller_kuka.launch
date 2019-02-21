@@ -18,7 +18,7 @@
     <!-- Load controllers -->
     <rosparam file="$(find etasl_ros_controllers)/example/hardware_controllers.yaml" command="load"/>
     <rosparam file="$(find etasl_ros_controllers)/example/controller_joint_names.yaml" command="load"/>
-    <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false" output="screen" args="example_controller joint_state_controller"/>
+    <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false" output="screen" args="etasl_controller joint_state_controller"/>
 
     <!-- Load robot state publisher -->
     <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />

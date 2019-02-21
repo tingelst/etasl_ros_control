@@ -3,7 +3,7 @@ require("geometric")
 
 local u = UrdfExpr()
 u:readFromParam("/robot_description")
-u:addTransform("ee", "ee_link", "base_link")
+u:addTransform("ee", "tool0", "base_link")
 
 local r = u:getExpressions(ctx)
 

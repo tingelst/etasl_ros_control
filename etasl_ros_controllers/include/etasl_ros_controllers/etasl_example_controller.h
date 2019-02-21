@@ -34,7 +34,7 @@ using VectorMap = std::map<std::string, Vector>;
 using RotationMap = std::map<std::string, Rotation>;
 using TwistMap = std::map<std::string, Twist>;
 
-class ExampleController
+class EtaslController
   : public controller_interface::MultiInterfaceController<hardware_interface::PositionJointInterface>
 {
 public:

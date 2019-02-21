@@ -13,18 +13,18 @@
 
 namespace etasl_ros_controllers
 {
-bool ExampleController::init(hardware_interface::RobotHW* robot_hardware, ros::NodeHandle& node_handle)
+bool EtaslController::init(hardware_interface::RobotHW* robot_hardware, ros::NodeHandle& node_handle)
 {
   position_joint_interface_ = robot_hardware->get<hardware_interface::PositionJointInterface>();
   if (position_joint_interface_ == nullptr)
   {
-    ROS_ERROR("ExampleController: Error getting position joint interface from hardware!");
+    ROS_ERROR("EtaslController: Error getting position joint interface from hardware!");
     return false;
   }
 
   if (!node_handle.getParam("/etasl/joint_names", joint_names_))
   {
-    ROS_ERROR("ExampleController: Could not parse joint names");
+    ROS_ERROR("EtaslController: Could not parse joint names");
   }
   n_joints_ = joint_names_.size();
   position_joint_handles_.resize(n_joints_);
@@ -36,7 +36,7 @@ bool ExampleController::init(hardware_interface::RobotHW* robot_hardware, ros::N
     }
     catch (const hardware_interface::HardwareInterfaceException& e)
     {
-      ROS_ERROR_STREAM("ExampleController: Exception getting joint handles: " << e.what());
+      ROS_ERROR_STREAM("EtaslController: Exception getting joint handles: " << e.what());
       return false;
     }
   }
@@ -53,7 +53,7 @@ bool ExampleController::init(hardware_interface::RobotHW* robot_hardware, ros::N
 
   if (!node_handle.getParam("/etasl/task_specification", task_specification_))
   {
-    ROS_ERROR("ExampleController: Could not find task specification on parameter server");
+    ROS_ERROR("EtaslController: Could not find task specification on parameter server");
     return false;
   }
   etasl_ = boost::make_shared<EtaslDriver>(300, 0.0, 0.0001);
@@ -62,7 +62,7 @@ bool ExampleController::init(hardware_interface::RobotHW* robot_hardware, ros::N
   return true;
 }
 
-void ExampleController::starting(const ros::Time& /* time */)
+void EtaslController::starting(const ros::Time& /* time */)
 {
   for (size_t i = 0; i < n_joints_; ++i)
   {
@@ -72,11 +72,11 @@ void ExampleController::starting(const ros::Time& /* time */)
   DoubleMap converged_values_map;
   if (etasl_->initialize(joint_position_map_, 10.0, 0.004, 1E-4, converged_values_map) < 0)
   {
-    ROS_ERROR_STREAM("ExampleController: Could not initialize the eTaSl solver");
+    ROS_ERROR_STREAM("EtaslController: Could not initialize the eTaSl solver");
   }
 }
 
-void ExampleController::update(const ros::Time& /*time*/, const ros::Duration& period)
+void EtaslController::update(const ros::Time& /*time*/, const ros::Duration& period)
 {
   // Read from input channels
   getInput();
@@ -103,24 +103,24 @@ void ExampleController::update(const ros::Time& /*time*/, const ros::Duration& p
   setOutput();
 }
 
-bool ExampleController::configureInput(ros::NodeHandle& node_handle)
+bool EtaslController::configureInput(ros::NodeHandle& node_handle)
 {
   if (node_handle.getParam("/etasl/input/names", input_names_) &&
       node_handle.getParam("/etasl/input/types", input_types_))
   {
     if (!(input_names_.size() == input_types_.size()))
     {
-      ROS_ERROR_STREAM("ExampleController: The number of input names and input types must be the same");
+      ROS_ERROR_STREAM("EtaslController: The number of input names and input types must be the same");
       return false;
     }
     n_inputs_ = input_names_.size();
-    ROS_INFO_STREAM("ExampleController: Found " << n_inputs_ << " input channels");
+    ROS_INFO_STREAM("EtaslController: Found " << n_inputs_ << " input channels");
 
     for (size_t i = 0; i < n_inputs_; ++i)
     {
       if (input_types_[i] == "Scalar")
       {
-        ROS_INFO_STREAM("ExampleController: Adding input channel \"" << input_names_[i] << "\" of type \"Scalar\"");
+        ROS_INFO_STREAM("EtaslController: Adding input channel \"" << input_names_[i] << "\" of type \"Scalar\"");
         scalar_input_names_.push_back(input_names_[i]);
         auto input_buffer = boost::make_shared<realtime_tools::RealtimeBuffer<double>>();
         boost::function<void(const std_msgs::Float64ConstPtr&)> callback =
@@ -131,7 +131,7 @@ bool ExampleController::configureInput(ros::NodeHandle& node_handle)
       }
       else if (input_types_[i] == "Vector")
       {
-        ROS_INFO_STREAM("ExampleController: Adding input channel \"" << input_names_[i] << "\" of type \"Vector\"");
+        ROS_INFO_STREAM("EtaslController: Adding input channel \"" << input_names_[i] << "\" of type \"Vector\"");
         vector_input_names_.push_back(input_names_[i]);
         auto input_buffer = boost::make_shared<realtime_tools::RealtimeBuffer<geometry_msgs::Point>>();
         boost::function<void(const geometry_msgs::PointConstPtr&)> callback =
@@ -142,7 +142,7 @@ bool ExampleController::configureInput(ros::NodeHandle& node_handle)
       }
       else if (input_types_[i] == "Rotation")
       {
-        ROS_INFO_STREAM("ExampleController: Adding input channel \"" << input_names_[i] << "\" of type \"Rotation\"");
+        ROS_INFO_STREAM("EtaslController: Adding input channel \"" << input_names_[i] << "\" of type \"Rotation\"");
         rotation_input_names_.push_back(input_names_[i]);
         auto input_buffer = boost::make_shared<realtime_tools::RealtimeBuffer<geometry_msgs::Quaternion>>();
         boost::function<void(const geometry_msgs::QuaternionConstPtr&)> callback =
@@ -153,7 +153,7 @@ bool ExampleController::configureInput(ros::NodeHandle& node_handle)
       }
       else if (input_types_[i] == "Frame")
       {
-        ROS_INFO_STREAM("ExampleController: Adding input channel \"" << input_names_[i] << "\" of type \"Frame\"");
+        ROS_INFO_STREAM("EtaslController: Adding input channel \"" << input_names_[i] << "\" of type \"Frame\"");
         frame_input_names_.push_back(input_names_[i]);
         auto input_buffer = boost::make_shared<realtime_tools::RealtimeBuffer<geometry_msgs::Pose>>();
         boost::function<void(const geometry_msgs::PoseConstPtr&)> callback =
@@ -164,7 +164,7 @@ bool ExampleController::configureInput(ros::NodeHandle& node_handle)
       }
       else if (input_types_[i] == "Twist")
       {
-        ROS_INFO_STREAM("ExampleController: Adding input channel \"" << input_names_[i] << "\" of type \"Twist\"");
+        ROS_INFO_STREAM("EtaslController: Adding input channel \"" << input_names_[i] << "\" of type \"Twist\"");
         twist_input_names_.push_back(input_names_[i]);
         auto input_buffer = boost::make_shared<realtime_tools::RealtimeBuffer<geometry_msgs::Twist>>();
         boost::function<void(const geometry_msgs::TwistConstPtr&)> callback =
@@ -175,19 +175,19 @@ bool ExampleController::configureInput(ros::NodeHandle& node_handle)
       }
       else
       {
-        ROS_ERROR_STREAM("ExampleController: Input channel type \"" << input_types_[i] << "\" is not supported");
+        ROS_ERROR_STREAM("EtaslController: Input channel type \"" << input_types_[i] << "\" is not supported");
         return false;
       }
     }
   }
   else
   {
-    ROS_INFO("ExampleController: Could not find input channels on parameter server");
+    ROS_INFO("EtaslController: Could not find input channels on parameter server");
   }
   return true;
 }
 
-void ExampleController::getInput()
+void EtaslController::getInput()
 {
   // Read inputs
   if (n_scalar_inputs_ > 0)
@@ -244,25 +244,25 @@ void ExampleController::getInput()
   }
 }
 
-bool ExampleController::configureOutput(ros::NodeHandle& node_handle)
+bool EtaslController::configureOutput(ros::NodeHandle& node_handle)
 {
   if (node_handle.getParam("/etasl/output/names", output_names_) &&
       node_handle.getParam("/etasl/output/types", output_types_))
   {
     if (!(output_names_.size() == output_types_.size()))
     {
-      ROS_ERROR_STREAM("ExampleController: The number of output names and output types must be the same");
+      ROS_ERROR_STREAM("EtaslController: The number of output names and output types must be the same");
       return false;
     }
 
     n_outputs_ = output_names_.size();
-    ROS_INFO_STREAM("ExampleController: Found " << n_outputs_ << " output channels");
+    ROS_INFO_STREAM("EtaslController: Found " << n_outputs_ << " output channels");
 
     for (size_t i = 0; i < n_outputs_; ++i)
     {
       if (output_types_[i] == "Scalar")
       {
-        ROS_INFO_STREAM("ExampleController: Adding output channel \"" << output_names_[i] << "\" of type \"Scalar\"");
+        ROS_INFO_STREAM("EtaslController: Adding output channel \"" << output_names_[i] << "\" of type \"Scalar\"");
         scalar_output_names_.push_back(output_names_[i]);
         scalar_realtime_pubs_.push_back(
             boost::make_shared<realtime_tools::RealtimePublisher<std_msgs::Float64>>(node_handle, output_names_[i], 4));
@@ -270,7 +270,7 @@ bool ExampleController::configureOutput(ros::NodeHandle& node_handle)
       }
       else if (output_types_[i] == "Vector")
       {
-        ROS_INFO_STREAM("ExampleController: Adding output channel \"" << output_names_[i] << "\" of type \"Vector\"");
+        ROS_INFO_STREAM("EtaslController: Adding output channel \"" << output_names_[i] << "\" of type \"Vector\"");
         vector_output_names_.push_back(output_names_[i]);
         vector_realtime_pubs_.push_back(boost::make_shared<realtime_tools::RealtimePublisher<geometry_msgs::Point>>(
             node_handle, output_names_[i], 4));
@@ -278,7 +278,7 @@ bool ExampleController::configureOutput(ros::NodeHandle& node_handle)
       }
       else if (output_types_[i] == "Rotation")
       {
-        ROS_INFO_STREAM("ExampleController: Adding output channel \"" << output_names_[i] << "\" of type \"Rotation\"");
+        ROS_INFO_STREAM("EtaslController: Adding output channel \"" << output_names_[i] << "\" of type \"Rotation\"");
         rotation_output_names_.push_back(output_names_[i]);
         rotation_realtime_pubs_.push_back(
             boost::make_shared<realtime_tools::RealtimePublisher<geometry_msgs::Quaternion>>(node_handle,
@@ -287,7 +287,7 @@ bool ExampleController::configureOutput(ros::NodeHandle& node_handle)
       }
       else if (output_types_[i] == "Frame")
       {
-        ROS_INFO_STREAM("ExampleController: Adding output channel \"" << output_names_[i] << "\" of type \"Frame\"");
+        ROS_INFO_STREAM("EtaslController: Adding output channel \"" << output_names_[i] << "\" of type \"Frame\"");
         frame_output_names_.push_back(output_names_[i]);
         frame_realtime_pubs_.push_back(boost::make_shared<realtime_tools::RealtimePublisher<geometry_msgs::Pose>>(
             node_handle, output_names_[i], 4));
@@ -295,7 +295,7 @@ bool ExampleController::configureOutput(ros::NodeHandle& node_handle)
       }
       else if (output_types_[i] == "Twist")
       {
-        ROS_INFO_STREAM("ExampleController: Adding output channel \"" << output_names_[i] << "\" of type \"Twist\"");
+        ROS_INFO_STREAM("EtaslController: Adding output channel \"" << output_names_[i] << "\" of type \"Twist\"");
         twist_output_names_.push_back(output_names_[i]);
         twist_realtime_pubs_.push_back(boost::make_shared<realtime_tools::RealtimePublisher<geometry_msgs::Twist>>(
             node_handle, output_names_[i], 4));
@@ -303,18 +303,18 @@ bool ExampleController::configureOutput(ros::NodeHandle& node_handle)
       }
       else
       {
-        ROS_ERROR_STREAM("ExampleController: Output channel type \"" << output_types_[i] << "\" is not supported");
+        ROS_ERROR_STREAM("EtaslController: Output channel type \"" << output_types_[i] << "\" is not supported");
         return false;
       }
     }
   }
   else
   {
-    ROS_INFO("ExampleController: Could not find output channels on parameter server");
+    ROS_INFO("EtaslController: Could not find output channels on parameter server");
   }
 }
 
-void ExampleController::setOutput()
+void EtaslController::setOutput()
 {
   if (n_scalar_outputs_ > 0)
   {
@@ -388,4 +388,4 @@ void ExampleController::setOutput()
 
 }  // namespace etasl_ros_controllers
 
-PLUGINLIB_EXPORT_CLASS(etasl_ros_controllers::ExampleController, controller_interface::ControllerBase)
+PLUGINLIB_EXPORT_CLASS(etasl_ros_controllers::EtaslController, controller_interface::ControllerBase)

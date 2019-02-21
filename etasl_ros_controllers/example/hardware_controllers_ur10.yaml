@@ -1,6 +1,6 @@
 # eTaSl example controller
-example_controller:
-  type: "etasl_ros_controllers/ExampleController"
+etasl_controller:
+  type: "etasl_ros_controllers/EtaslController"
   joints:
     - "shoulder_pan_joint"
     - "shoulder_lift_joint"
