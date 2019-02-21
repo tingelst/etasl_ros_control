@@ -34,7 +34,8 @@ using VectorMap = std::map<std::string, Vector>;
 using RotationMap = std::map<std::string, Rotation>;
 using TwistMap = std::map<std::string, Twist>;
 
-class ExampleController : public controller_interface::MultiInterfaceController<hardware_interface::PositionJointInterface>
+class ExampleController
+  : public controller_interface::MultiInterfaceController<hardware_interface::PositionJointInterface>
 {
 public:
   bool init(hardware_interface::RobotHW* robot_hardware, ros::NodeHandle& node_handle) override;

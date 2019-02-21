@@ -41,7 +41,8 @@ bool ExampleController::init(hardware_interface::RobotHW* robot_hardware, ros::N
     }
   }
 
-  if (node_handle.getParam("/etasl/input/names", input_names_) && node_handle.getParam("/etasl/input/types", input_types_))
+  if (node_handle.getParam("/etasl/input/names", input_names_) &&
+      node_handle.getParam("/etasl/input/types", input_types_))
   {
     if (!(input_names_.size() == input_types_.size()))
     {
@@ -58,9 +59,8 @@ bool ExampleController::init(hardware_interface::RobotHW* robot_hardware, ros::N
         ROS_INFO_STREAM("ExampleController: Adding input channel \"" << input_names_[i] << "\" of type \"Scalar\"");
         scalar_input_names_.push_back(input_names_[i]);
         auto input_buffer = boost::make_shared<realtime_tools::RealtimeBuffer<double>>();
-        boost::function<void(const std_msgs::Float64ConstPtr&)> callback = [input_buffer](const std_msgs::Float64ConstPtr& msg) {
-          input_buffer->writeFromNonRT(msg->data);
-        };
+        boost::function<void(const std_msgs::Float64ConstPtr&)> callback =
+            [input_buffer](const std_msgs::Float64ConstPtr& msg) { input_buffer->writeFromNonRT(msg->data); };
         subs_.push_back(node_handle.subscribe<std_msgs::Float64>(input_names_[i], 1, callback));
         scalar_input_buffers_.push_back(input_buffer);
         ++n_scalar_inputs_;
@@ -70,9 +70,8 @@ bool ExampleController::init(hardware_interface::RobotHW* robot_hardware, ros::N
         ROS_INFO_STREAM("ExampleController: Adding input channel \"" << input_names_[i] << "\" of type \"Vector\"");
         vector_input_names_.push_back(input_names_[i]);
         auto input_buffer = boost::make_shared<realtime_tools::RealtimeBuffer<geometry_msgs::Point>>();
-        boost::function<void(const geometry_msgs::PointConstPtr&)> callback = [input_buffer](const geometry_msgs::PointConstPtr& msg) {
-          input_buffer->writeFromNonRT(*msg);
-        };
+        boost::function<void(const geometry_msgs::PointConstPtr&)> callback =
+            [input_buffer](const geometry_msgs::PointConstPtr& msg) { input_buffer->writeFromNonRT(*msg); };
         subs_.push_back(node_handle.subscribe<geometry_msgs::Pose>(input_names_[i], 1, callback));
         vector_input_buffers_.push_back(input_buffer);
         ++n_vector_inputs_;
@@ -82,9 +81,8 @@ bool ExampleController::init(hardware_interface::RobotHW* robot_hardware, ros::N
         ROS_INFO_STREAM("ExampleController: Adding input channel \"" << input_names_[i] << "\" of type \"Rotation\"");
         rotation_input_names_.push_back(input_names_[i]);
         auto input_buffer = boost::make_shared<realtime_tools::RealtimeBuffer<geometry_msgs::Quaternion>>();
-        boost::function<void(const geometry_msgs::QuaternionConstPtr&)> callback = [input_buffer](const geometry_msgs::QuaternionConstPtr& msg) {
-          input_buffer->writeFromNonRT(*msg);
-        };
+        boost::function<void(const geometry_msgs::QuaternionConstPtr&)> callback =
+            [input_buffer](const geometry_msgs::QuaternionConstPtr& msg) { input_buffer->writeFromNonRT(*msg); };
         subs_.push_back(node_handle.subscribe<geometry_msgs::Quaternion>(input_names_[i], 1, callback));
         rotation_input_buffers_.push_back(input_buffer);
         ++n_rotation_inputs_;
@@ -94,9 +92,8 @@ bool ExampleController::init(hardware_interface::RobotHW* robot_hardware, ros::N
         ROS_INFO_STREAM("ExampleController: Adding input channel \"" << input_names_[i] << "\" of type \"Frame\"");
         frame_input_names_.push_back(input_names_[i]);
         auto input_buffer = boost::make_shared<realtime_tools::RealtimeBuffer<geometry_msgs::Pose>>();
-        boost::function<void(const geometry_msgs::PoseConstPtr&)> callback = [input_buffer](const geometry_msgs::PoseConstPtr& msg) {
-          input_buffer->writeFromNonRT(*msg);
-        };
+        boost::function<void(const geometry_msgs::PoseConstPtr&)> callback =
+            [input_buffer](const geometry_msgs::PoseConstPtr& msg) { input_buffer->writeFromNonRT(*msg); };
         subs_.push_back(node_handle.subscribe<geometry_msgs::Pose>(input_names_[i], 1, callback));
         frame_input_buffers_.push_back(input_buffer);
         ++n_frame_inputs_;
@@ -106,9 +103,8 @@ bool ExampleController::init(hardware_interface::RobotHW* robot_hardware, ros::N
         ROS_INFO_STREAM("ExampleController: Adding input channel \"" << input_names_[i] << "\" of type \"Twist\"");
         twist_input_names_.push_back(input_names_[i]);
         auto input_buffer = boost::make_shared<realtime_tools::RealtimeBuffer<geometry_msgs::Twist>>();
-        boost::function<void(const geometry_msgs::TwistConstPtr&)> callback = [input_buffer](const geometry_msgs::TwistConstPtr& msg) {
-          input_buffer->writeFromNonRT(*msg);
-        };
+        boost::function<void(const geometry_msgs::TwistConstPtr&)> callback =
+            [input_buffer](const geometry_msgs::TwistConstPtr& msg) { input_buffer->writeFromNonRT(*msg); };
         subs_.push_back(node_handle.subscribe<geometry_msgs::Twist>(input_names_[i], 1, callback));
         twist_input_buffers_.push_back(input_buffer);
         ++n_twist_inputs_;
@@ -125,7 +121,8 @@ bool ExampleController::init(hardware_interface::RobotHW* robot_hardware, ros::N
     ROS_INFO("ExampleController: Could not find input channels on parameter server");
   }
 
-  if (node_handle.getParam("/etasl/output/names", output_names_) && node_handle.getParam("/etasl/output/types", output_types_))
+  if (node_handle.getParam("/etasl/output/names", output_names_) &&
+      node_handle.getParam("/etasl/output/types", output_types_))
   {
     if (!(output_names_.size() == output_types_.size()))
     {
@@ -142,15 +139,16 @@ bool ExampleController::init(hardware_interface::RobotHW* robot_hardware, ros::N
       {
         ROS_INFO_STREAM("ExampleController: Adding output channel \"" << output_names_[i] << "\" of type \"Scalar\"");
         scalar_output_names_.push_back(output_names_[i]);
-        scalar_realtime_pubs_.push_back(boost::make_shared<realtime_tools::RealtimePublisher<std_msgs::Float64>>(node_handle, output_names_[i], 4));
+        scalar_realtime_pubs_.push_back(
+            boost::make_shared<realtime_tools::RealtimePublisher<std_msgs::Float64>>(node_handle, output_names_[i], 4));
         ++n_scalar_outputs_;
       }
       else if (output_types_[i] == "Vector")
       {
         ROS_INFO_STREAM("ExampleController: Adding output channel \"" << output_names_[i] << "\" of type \"Vector\"");
         vector_output_names_.push_back(output_names_[i]);
-        vector_realtime_pubs_.push_back(
-            boost::make_shared<realtime_tools::RealtimePublisher<geometry_msgs::Point>>(node_handle, output_names_[i], 4));
+        vector_realtime_pubs_.push_back(boost::make_shared<realtime_tools::RealtimePublisher<geometry_msgs::Point>>(
+            node_handle, output_names_[i], 4));
         ++n_vector_outputs_;
       }
       else if (output_types_[i] == "Rotation")
@@ -158,21 +156,24 @@ bool ExampleController::init(hardware_interface::RobotHW* robot_hardware, ros::N
         ROS_INFO_STREAM("ExampleController: Adding output channel \"" << output_names_[i] << "\" of type \"Rotation\"");
         rotation_output_names_.push_back(output_names_[i]);
         rotation_realtime_pubs_.push_back(
-            boost::make_shared<realtime_tools::RealtimePublisher<geometry_msgs::Quaternion>>(node_handle, output_names_[i], 4));
+            boost::make_shared<realtime_tools::RealtimePublisher<geometry_msgs::Quaternion>>(node_handle,
+                                                                                             output_names_[i], 4));
         ++n_rotation_outputs_;
       }
       else if (output_types_[i] == "Frame")
       {
         ROS_INFO_STREAM("ExampleController: Adding output channel \"" << output_names_[i] << "\" of type \"Frame\"");
         frame_output_names_.push_back(output_names_[i]);
-        frame_realtime_pubs_.push_back(boost::make_shared<realtime_tools::RealtimePublisher<geometry_msgs::Pose>>(node_handle, output_names_[i], 4));
+        frame_realtime_pubs_.push_back(boost::make_shared<realtime_tools::RealtimePublisher<geometry_msgs::Pose>>(
+            node_handle, output_names_[i], 4));
         ++n_frame_outputs_;
       }
       else if (output_types_[i] == "Twist")
       {
         ROS_INFO_STREAM("ExampleController: Adding output channel \"" << output_names_[i] << "\" of type \"Twist\"");
         twist_output_names_.push_back(output_names_[i]);
-        twist_realtime_pubs_.push_back(boost::make_shared<realtime_tools::RealtimePublisher<geometry_msgs::Twist>>(node_handle, output_names_[i], 4));
+        twist_realtime_pubs_.push_back(boost::make_shared<realtime_tools::RealtimePublisher<geometry_msgs::Twist>>(
+            node_handle, output_names_[i], 4));
         ++n_twist_outputs_;
       }
       else
@@ -231,7 +232,8 @@ void ExampleController::update(const ros::Time& /*time*/, const ros::Duration& p
   etasl_->getJointVel(joint_velocity_map_);
   for (size_t i = 0; i < n_joints_; ++i)
   {
-    position_joint_handles_[i].setCommand(joint_position_map_[joint_names_[i]] + joint_velocity_map_[joint_names_[i]] * period.toSec());
+    position_joint_handles_[i].setCommand(joint_position_map_[joint_names_[i]] +
+                                          joint_velocity_map_[joint_names_[i]] * period.toSec());
   }
 
   // Write to output channels

@@ -56,7 +56,8 @@ class EtaslDriver
    * @returns: true if successful initialization, false otherwise.
    *   returns the values of the joint and feature variables in the result variable.
    */
-  bool initializeFeatureVariables(double initialization_time, double sample_time, double convergence_crit, DoubleMap& result);
+  bool initializeFeatureVariables(double initialization_time, double sample_time, double convergence_crit,
+                                  DoubleMap& result);
 
 public:
   /**
@@ -197,7 +198,8 @@ public:
    *   -4 : first run of the execution problem failed.
    *   -5 : no task specification present
    */
-  int initialize(const DoubleMap& initialval, double initialization_time, double sample_time, double convergence_crit, DoubleMap& converged_val);
+  int initialize(const DoubleMap& initialval, double initialization_time, double sample_time, double convergence_crit,
+                 DoubleMap& converged_val);
 
   /**
    * Computes the controller output for 1 time step.
@@ -255,7 +257,8 @@ public:
    * flag == 2 for only feature variables,
    * flag == 3 for both.
    */
-  void getVariables(int flag, std::vector<std::string>& name, std::vector<double>& weight, std::vector<double>& initval);
+  void getVariables(int flag, std::vector<std::string>& name, std::vector<double>& weight,
+                    std::vector<double>& initval);
 
   /**
    * request all declared input channels
