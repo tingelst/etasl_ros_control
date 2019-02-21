@@ -47,8 +47,10 @@ private:
   std::vector<hardware_interface::JointHandle> position_joint_handles_;
 
   void solve();
+  bool configureInput(ros::NodeHandle& node_handle);
   void getInput();
   void setOutput();
+  bool configureOutput(ros::NodeHandle& node_handle);
 
   DoubleMap joint_position_map_;
   std::vector<std::string> joint_names_;

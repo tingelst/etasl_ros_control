@@ -41,6 +41,70 @@ bool ExampleController::init(hardware_interface::RobotHW* robot_hardware, ros::N
     }
   }
 
+  if (!configureInput(node_handle))
+  {
+    return false;
+  }
+
+  if (!configureOutput(node_handle))
+  {
+    return false;
+  }
+
+  if (!node_handle.getParam("/etasl/task_specification", task_specification_))
+  {
+    ROS_ERROR("ExampleController: Could not find task specification on parameter server");
+    return false;
+  }
+  etasl_ = boost::make_shared<EtaslDriver>(300, 0.0, 0.0001);
+  etasl_->readTaskSpecificationString(task_specification_);
+
+  return true;
+}
+
+void ExampleController::starting(const ros::Time& /* time */)
+{
+  for (size_t i = 0; i < n_joints_; ++i)
+  {
+    joint_position_map_[joint_names_[i]] = position_joint_handles_[i].getPosition();
+  }
+
+  DoubleMap converged_values_map;
+  if (etasl_->initialize(joint_position_map_, 10.0, 0.004, 1E-4, converged_values_map) < 0)
+  {
+    ROS_ERROR_STREAM("ExampleController: Could not initialize the eTaSl solver");
+  }
+}
+
+void ExampleController::update(const ros::Time& /*time*/, const ros::Duration& period)
+{
+  // Read from input channels
+  getInput();
+
+  // Read joint positions from hardware interface
+  for (size_t i = 0; i < n_joints_; ++i)
+  {
+    joint_position_map_[joint_names_[i]] = position_joint_handles_[i].getPosition();
+  }
+  etasl_->setJointPos(joint_position_map_);
+
+  // Solve the optimization problem
+  etasl_->solve();
+
+  // Get computed joint velocity, integrate, and set joint position command
+  etasl_->getJointVel(joint_velocity_map_);
+  for (size_t i = 0; i < n_joints_; ++i)
+  {
+    position_joint_handles_[i].setCommand(joint_position_map_[joint_names_[i]] +
+                                          joint_velocity_map_[joint_names_[i]] * period.toSec());
+  }
+
+  // Write to output channels
+  setOutput();
+}
+
+bool ExampleController::configureInput(ros::NodeHandle& node_handle)
+{
   if (node_handle.getParam("/etasl/input/names", input_names_) &&
       node_handle.getParam("/etasl/input/types", input_types_))
   {
@@ -120,7 +184,68 @@ bool ExampleController::init(hardware_interface::RobotHW* robot_hardware, ros::N
   {
     ROS_INFO("ExampleController: Could not find input channels on parameter server");
   }
+  return true;
+}
 
+void ExampleController::getInput()
+{
+  // Read inputs
+  if (n_scalar_inputs_ > 0)
+  {
+    for (size_t i = 0; i < n_scalar_inputs_; i++)
+    {
+      scalar_input_map_["global." + scalar_input_names_[i]] = *scalar_input_buffers_[i]->readFromRT();
+    }
+    etasl_->setInput(scalar_input_map_);
+  }
+
+  if (n_vector_inputs_ > 0)
+  {
+    for (size_t i = 0; i < n_vector_inputs_; i++)
+    {
+      Vector vector;
+      tf::pointMsgToKDL(*vector_input_buffers_[i]->readFromRT(), vector);
+      vector_input_map_["global." + vector_input_names_[i]] = vector;
+    }
+    etasl_->setInput(vector_input_map_);
+  }
+
+  if (n_rotation_inputs_ > 0)
+  {
+    for (size_t i = 0; i < n_rotation_inputs_; i++)
+    {
+      Rotation rotation;
+      tf::quaternionMsgToKDL(*rotation_input_buffers_[i]->readFromRT(), rotation);
+      rotation_input_map_["global." + rotation_input_names_[i]] = rotation;
+    }
+    etasl_->setInput(rotation_input_map_);
+  }
+
+  if (n_frame_inputs_ > 0)
+  {
+    for (size_t i = 0; i < n_frame_inputs_; i++)
+    {
+      Frame frame;
+      tf::poseMsgToKDL(*frame_input_buffers_[i]->readFromRT(), frame);
+      frame_input_map_["global." + frame_input_names_[i]] = frame;
+    }
+    etasl_->setInput(frame_input_map_);
+  }
+
+  if (n_twist_inputs_ > 0)
+  {
+    for (size_t i = 0; i < n_twist_inputs_; i++)
+    {
+      Twist twist;
+      tf::twistMsgToKDL(*twist_input_buffers_[i]->readFromRT(), twist);
+      twist_input_map_["global." + twist_input_names_[i]] = twist;
+    }
+    etasl_->setInput(twist_input_map_);
+  }
+}
+
+bool ExampleController::configureOutput(ros::NodeHandle& node_handle)
+{
   if (node_handle.getParam("/etasl/output/names", output_names_) &&
       node_handle.getParam("/etasl/output/types", output_types_))
   {
@@ -186,114 +311,6 @@ bool ExampleController::init(hardware_interface::RobotHW* robot_hardware, ros::N
   else
   {
     ROS_INFO("ExampleController: Could not find output channels on parameter server");
-  }
-
-  if (!node_handle.getParam("/etasl/task_specification", task_specification_))
-  {
-    ROS_ERROR("ExampleController: Could not find task specification on parameter server");
-    return false;
-  }
-  etasl_ = boost::make_shared<EtaslDriver>(300, 0.0, 0.0001);
-  etasl_->readTaskSpecificationString(task_specification_);
-
-  return true;
-}
-
-void ExampleController::starting(const ros::Time& /* time */)
-{
-  for (size_t i = 0; i < n_joints_; ++i)
-  {
-    joint_position_map_[joint_names_[i]] = position_joint_handles_[i].getPosition();
-  }
-
-  DoubleMap converged_values_map;
-  if (etasl_->initialize(joint_position_map_, 10.0, 0.004, 1E-4, converged_values_map) < 0)
-  {
-    ROS_ERROR_STREAM("ExampleController: Could not initialize the eTaSl solver");
-  }
-}
-
-void ExampleController::update(const ros::Time& /*time*/, const ros::Duration& period)
-{
-  // Read from input channels
-  getInput();
-
-  // Read joint positions from hardware interface
-  for (size_t i = 0; i < n_joints_; ++i)
-  {
-    joint_position_map_[joint_names_[i]] = position_joint_handles_[i].getPosition();
-  }
-  etasl_->setJointPos(joint_position_map_);
-
-  // Solve the optimization problem
-  etasl_->solve();
-
-  // Get computed joint velocity, integrate, and set joint position command
-  etasl_->getJointVel(joint_velocity_map_);
-  for (size_t i = 0; i < n_joints_; ++i)
-  {
-    position_joint_handles_[i].setCommand(joint_position_map_[joint_names_[i]] +
-                                          joint_velocity_map_[joint_names_[i]] * period.toSec());
-  }
-
-  // Write to output channels
-  setOutput();
-}
-
-void ExampleController::getInput()
-{
-  // Read inputs
-  if (n_scalar_inputs_ > 0)
-  {
-    for (size_t i = 0; i < n_scalar_inputs_; i++)
-    {
-      scalar_input_map_["global." + scalar_input_names_[i]] = *scalar_input_buffers_[i]->readFromRT();
-    }
-    etasl_->setInput(scalar_input_map_);
-  }
-
-  if (n_vector_inputs_ > 0)
-  {
-    for (size_t i = 0; i < n_vector_inputs_; i++)
-    {
-      Vector vector;
-      tf::pointMsgToKDL(*vector_input_buffers_[i]->readFromRT(), vector);
-      vector_input_map_["global." + vector_input_names_[i]] = vector;
-    }
-    etasl_->setInput(vector_input_map_);
-  }
-
-  if (n_rotation_inputs_ > 0)
-  {
-    for (size_t i = 0; i < n_rotation_inputs_; i++)
-    {
-      Rotation rotation;
-      tf::quaternionMsgToKDL(*rotation_input_buffers_[i]->readFromRT(), rotation);
-      rotation_input_map_["global." + rotation_input_names_[i]] = rotation;
-    }
-    etasl_->setInput(rotation_input_map_);
-  }
-
-  if (n_frame_inputs_ > 0)
-  {
-    for (size_t i = 0; i < n_frame_inputs_; i++)
-    {
-      Frame frame;
-      tf::poseMsgToKDL(*frame_input_buffers_[i]->readFromRT(), frame);
-      frame_input_map_["global." + frame_input_names_[i]] = frame;
-    }
-    etasl_->setInput(frame_input_map_);
-  }
-
-  if (n_twist_inputs_ > 0)
-  {
-    for (size_t i = 0; i < n_twist_inputs_; i++)
-    {
-      Twist twist;
-      tf::twistMsgToKDL(*twist_input_buffers_[i]->readFromRT(), twist);
-      twist_input_map_["global." + twist_input_names_[i]] = twist;
-    }
-    etasl_->setInput(twist_input_map_);
   }
 }
 
