@@ -1,6 +1,6 @@
 - git:
     local-name: etasl_ros_control
-    uri: git@github.com:tingelst/etasl_ros_control.git
+    uri: https://github.com:tingelst/etasl_ros_control.git
     version: master
 - git:
     local-name: expressiongraph
