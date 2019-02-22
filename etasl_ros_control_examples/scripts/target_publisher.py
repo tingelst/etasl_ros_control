@@ -55,24 +55,26 @@ if __name__ == "__main__":
     rate = rospy.Rate(30)
 
     points = []
+    try:
+        while not rospy.is_shutdown():
+            f1 = 1.0
+            f2 = 2.5
+            t = time.time()
+            tgt_x = np.sin(f1*t)*0.15 + 0.4
+            tgt_y = np.sin(f2*t)*0.1 + 0.4
+            tgt_z = 0.0
+            pub_tgt_x.publish(tgt_x)
+            pub_tgt_y.publish(tgt_y)
+            pub_tgt_z.publish(tgt_z)
+            points.append(Point(tgt_x, tgt_y, tgt_z))
 
-    while not rospy.is_shutdown():
-        f1 = 1.0
-        f2 = 2.5
-        t = time.time()
-        tgt_x = np.sin(f1*t)*0.15 + 0.4
-        tgt_y = np.sin(f2*t)*0.1 + 0.4
-        tgt_z = 0.0
-        pub_tgt_x.publish(tgt_x)
-        pub_tgt_y.publish(tgt_y)
-        pub_tgt_z.publish(tgt_z)
-        points.append(Point(tgt_x, tgt_y, tgt_z))
+            if len(points) > 250:
+                points = points[1:]
 
-        if len(points) > 250:
-            points = points[1:]
+            show_target(pub_marker, points, id_=0)
+            show_target(pub_marker, deepcopy(laser_points),
+                        color=(1.0, 0.0, 0.0, 0.8), id_=1)
 
-        show_target(pub_marker, points, id_=0)
-        show_target(pub_marker, deepcopy(laser_points),
-                    color=(1.0, 0.0, 0.0, 0.8), id_=1)
-
-        rate.sleep()
+            rate.sleep()
+    except rospy.ROSInterruptException:
+        pass
