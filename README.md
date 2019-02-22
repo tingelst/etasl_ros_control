@@ -1,6 +1,6 @@
 # etasl_ros_control
 
-This project integrates **eTaSl** with **ROS Control**.
+This project integrates **eTaSL** with **ROS Control**.
 
 eTaSL is a task specification language for reactive control of robot systems developed by KU Leuven. It is a language that allows you to describe how your robotic system has to move and interact with sensors. This description is based on a constraint-based methodology. Everything is specified as an optimization problem subject to constraints.
 
