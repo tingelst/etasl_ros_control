@@ -3,17 +3,16 @@ project(etasl_ros_control_examples)
 
 find_package(catkin)
 
-catkin_package()
+catkin_package(REQUIRED COMPONENTS
+  rospy
+)
 
 ## Installation
-install(DIRECTORY launch
+install(DIRECTORY launch config scripts
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )
 
-install(DIRECTORY config
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
-)
-
-install(DIRECTORY scripts
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+catkin_install_python(
+  PROGRAMS scripts/target_publisher.py
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )

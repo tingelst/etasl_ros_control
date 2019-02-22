@@ -31,4 +31,6 @@
     <node name="arm_controller_spawner" pkg="controller_manager" type="spawner" respawn="false" output="screen" args="etasl_controller"/>
 
     <node name="rviz" pkg="rviz" type="rviz" args="-d $(find industrial_robot_client)/config/robot_state_visualize.rviz" required="true" />
+
+    <node name="target_publisher" pkg="etasl_ros_control_examples" type="target_publisher.py" required="true"/>
 </launch>
