@@ -52,6 +52,7 @@ Setup your environment - you can do this every time you work with this particula
 source ~/etasl_ws/devel/setup.bash # or .zsh, depending on your shell
 ```
 
-## Acknowledgement
+## Acknowledgements
 
-The following installation instructions are modified from the MoveIt! installation instructions found [here](https://moveit.ros.org/install/source/).
+- The expressiongraph and eTaSL projects has been developed by KU Leuven.
+- The above installation instructions are modified from the MoveIt! installation instructions found [here](https://moveit.ros.org/install/source/).
