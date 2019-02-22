@@ -69,6 +69,7 @@ roslaunch etasl_ros_control_examples example_kuka_kr6r900sixx.launch
 ```bash
 roslaunch etasl_ros_control_examples example_ur10_gazebo.launch
 ```
+You can visualize the trajectory by adding a *Marker* in RViz: Add -> Marker -> OK
 
 ## Acknowledgements
 
