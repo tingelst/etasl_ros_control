@@ -26,7 +26,7 @@ j4 = ctx:getScalarExpr(robot_joints[4])
 j5 = ctx:getScalarExpr(robot_joints[5])
 j6 = ctx:getScalarExpr(robot_joints[6])
 
-maxvel = 1.0
+maxvel = 3
 for i = 1, #robot_joints do
     BoxConstraint{
         context = ctx,
@@ -36,9 +36,9 @@ for i = 1, #robot_joints do
     }
 end
 
-tgt_x = ctx:createInputChannelScalar("tgt_x", 0.5)
-tgt_y = ctx:createInputChannelScalar("tgt_y", 0)
-tgt_z = ctx:createInputChannelScalar("tgt_z", 0)
+tgt_x = ctx:createInputChannelScalar("tgt_x")
+tgt_y = ctx:createInputChannelScalar("tgt_y")
+tgt_z = ctx:createInputChannelScalar("tgt_z")
 
 d = Variable{context = ctx, name = "d", vartype = "feature"}
 
@@ -78,3 +78,4 @@ Constraint{
 ctx:setOutputExpression("error_x", coord_x(laserspot) - tgt_x)
 ctx:setOutputExpression("error_y", coord_y(laserspot) - tgt_y)
 ctx:setOutputExpression("error_z", coord_z(laserspot) - tgt_z)
+ctx:setOutputExpression("laser", laserspot)

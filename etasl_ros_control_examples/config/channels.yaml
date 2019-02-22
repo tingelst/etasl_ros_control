@@ -13,7 +13,9 @@ output:
     - "error_x"
     - "error_y"
     - "error_z"
+    - "laser"
   types:
     - "Scalar"
     - "Scalar"
     - "Scalar"
+    - "Vector"
