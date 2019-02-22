@@ -33,7 +33,7 @@ source /opt/ros/kinetic/setup.bash
 ```
 This will load the ${ROS_DISTRO} variable, needed for the next step.
 
-## Download and build `etasl_ros_control`
+### Download and build `etasl_ros_control`
 By default we will assume you are building on the latest branch, we currently use *master* as our master branch. 
 
 Pull down the required repositories and build from within the root directory of your catkin workspace:
@@ -46,13 +46,31 @@ catkin_init_workspace src
 catkin_make --cmake-args -DCMAKE_BUILD_TYPE=Release
 ```
 
-## Source the catkin workspace
+### Source the catkin workspace
 Setup your environment - you can do this every time you work with this particular source install of the code, or you can add this to your `.bashrc` (recommended):
 ```bash
 source ~/etasl_ws/devel/setup.bash # or .zsh, depending on your shell
 ```
 
+## Getting started
+
+If you haven’t already done so, make sure you’ve completed the steps above.
+
+### Launch the example 
+
+There are two `launch` files available: One using the KUKA KR6 R900 sixx Agilus robot and one using the UR10 robot with Gazebo.
+
+- Launch the example using the KUKA Agilus:
+```bash
+roslaunch etasl_ros_control_examples example_kuka_kr6r900sixx.launch
+```
+
+- Launch the example using the UR10:
+```bash
+roslaunch etasl_ros_control_examples example_ur10_gazebo.launch
+```
+
 ## Acknowledgements
 
-- The expressiongraph and eTaSL projects has been developed by KU Leuven.
+- The expressiongraph and eTaSL projects have been developed by KU Leuven.
 - The above installation instructions are modified from the MoveIt! installation instructions found [here](https://moveit.ros.org/install/source/).
