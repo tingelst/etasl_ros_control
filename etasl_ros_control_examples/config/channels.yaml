@@ -1,0 +1,19 @@
+input:
+  names:
+    - "tgt_x"
+    - "tgt_y"
+    - "tgt_z"
+  types:
+    - "Scalar"
+    - "Scalar"
+    - "Scalar"
+
+output:
+  names:
+    - "error_x"
+    - "error_y"
+    - "error_z"
+  types:
+    - "Scalar"
+    - "Scalar"
+    - "Scalar"

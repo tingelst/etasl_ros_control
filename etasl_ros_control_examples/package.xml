@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>etasl_ros_control_examples</name>
+  <version>0.0.1</version>
+  <description>etasl_example_control_examples provides example code for controlling robots with eTaSl and ros_control</description>
+  <maintainer email="lars.tingelstad@ntnu.no">Lars Tingelstad</maintainer>
+  <license>GNU LGPL-3.0</license>
+  <url type="repository">https://github.com/tingelst/etasl_ros_control</url>
+  <url type="bugtracker">https://github.com/tingelst/etasl_ros_control/issues</url>
+  <author>Lars Tingelstad</author>
+  <buildtool_depend>catkin</buildtool_depend>
+  <depend>universal_robot</depend>
+  <depend>kuka_experimental</depend>
+</package>
