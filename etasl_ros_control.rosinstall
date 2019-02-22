@@ -1,0 +1,48 @@
+- git:
+    local-name: etasl_ros_control
+    uri: git@github.com:tingelst/etasl_ros_control.git
+    version: master
+- git:
+    local-name: expressiongraph
+    uri: https://github.com/eaertbel/expressiongraph.git
+    version: 5486f0a6
+- git:
+    local-name: expressiongraph_bspline
+    uri: https://gitlab.mech.kuleuven.be/rob-expressiongraphs/expressiongraph_bspline.git
+    version: 7be83ad1
+- git:
+    local-name: expressiongraph_collision
+    uri: https://gitlab.mech.kuleuven.be/rob-expressiongraphs/expressiongraph_collision.git
+    version: 01fe26fb
+- git:
+    local-name: expressiongraph_context
+    uri: https://gitlab.mech.kuleuven.be/rob-expressiongraphs/expressiongraph_context.git
+    version: 2874d85a
+- git:
+    local-name: expressiongraph_context_lua
+    uri: https://gitlab.mech.kuleuven.be/rob-expressiongraphs/expressiongraph_context_lua.git
+    version: 14683af6
+- git:
+    local-name: expressiongraph_lua
+    uri: https://gitlab.mech.kuleuven.be/rob-expressiongraphs/expressiongraph_lua.git
+    version: c0de8bd2
+- git:
+    local-name: expressiongraph_ros
+    uri: https://gitlab.mech.kuleuven.be/rob-expressiongraphs/expressiongraph_ros.git
+    version: 450b9394
+- git:
+    local-name: expressiongraph_solver_qpoases
+    uri: https://gitlab.mech.kuleuven.be/rob-expressiongraphs/expressiongraph_solver_qpoases.git
+    version: b06312fb
+- git:
+    local-name: expressiongraph_spline
+    uri: https://gitlab.mech.kuleuven.be/rob-expressiongraphs/expressiongraph_spline.git
+    version: 3a97e1d8
+- git:
+    local-name: expressiongraph_velocities
+    uri: https://gitlab.mech.kuleuven.be/rob-expressiongraphs/expressiongraph_velocities.git
+    version: 92913e25
+- git:
+    local-name: luabind
+    uri: https://gitlab.mech.kuleuven.be/rob-expressiongraphs/luabind.git
+    version: f4e309fd
