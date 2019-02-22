@@ -3,9 +3,7 @@ project(etasl_ros_control_examples)
 
 find_package(catkin)
 
-catkin_package(REQUIRED COMPONENTS
-  rospy
-)
+catkin_package()
 
 ## Installation
 install(DIRECTORY launch config scripts
