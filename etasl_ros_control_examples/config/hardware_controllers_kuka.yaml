@@ -13,3 +13,24 @@ etasl_controller:
     - joint_a4
     - joint_a5
     - joint_a6
+  input:
+    names:
+      - "tgt_x"
+      - "tgt_y"
+      - "tgt_z"
+    types:
+      - "Scalar"
+      - "Scalar"
+      - "Scalar"
+  output:
+    names:
+      - "error_x"
+      - "error_y"
+      - "error_z"
+      - "laser"
+    types:
+      - "Scalar"
+      - "Scalar"
+      - "Scalar"
+      - "Vector"
+  task_specification: "$(find etasl_ros_control_examples)/scripts/example_kuka.lua"

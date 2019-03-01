@@ -56,20 +56,43 @@ source ~/etasl_ws/devel/setup.bash # or .zsh, depending on your shell
 
 If you haven’t already done so, make sure you’ve completed the steps above.
 
-### Launch the example 
+### Launch the examples
 
-There are two `launch` files available: One using the KUKA KR6 R900 sixx Agilus robot and one using the UR10 robot with Gazebo.
+There are three `launch` files available: One using the KUKA KR6 R900 sixx Agilus robot, one using the UR10 robot with Gazebo, and one showing how to setup multiple controllers that each load a separate task specification.
 
-- Launch the example using the KUKA Agilus:
+Launch the example using the KUKA Agilus:
 ```bash
 roslaunch etasl_ros_control_examples example_kuka_kr6r900sixx.launch
 ```
 
-- Launch the example using the UR10:
+Launch the example using the UR10:
 ```bash
 roslaunch etasl_ros_control_examples example_ur10_gazebo.launch
 ```
+
 You can visualize the trajectory by adding a *Marker* in RViz: Add -> Marker -> OK
+
+#### Multiple controllers
+
+Launch the example using multiple controllers:
+```bash 
+roslaunch etasl_ros_control_examples example_multiple_controllers.launch
+```
+This example loads three controllers, one joint trajectory controller, and two eTaSL controllers. The joint trajectory controller (`position_trajectory_controller`) is started, while the two eTaSL controllers are loaded. To switch to the first eTaSL controller (`etasl_controller`) you can use:
+```bash
+rosservice call /controller_manager/switch_controller [etasl_controller] [position_trajectory_controller] 2
+```
+Then, to switch to the second eTaSL controller (`etasl_controller_2`), you can use 
+```bash
+rosservice call /controller_manager/switch_controller [etasl_controller_2] [etasl_controller] 2
+```
+And, finally back to the joint trajectory controller:
+```bash
+rosservice call /controller_manager/switch_controller [position_trajectory_controller] [etasl_controller_2] 2
+```
+
+
+
 
 ## Acknowledgements
 

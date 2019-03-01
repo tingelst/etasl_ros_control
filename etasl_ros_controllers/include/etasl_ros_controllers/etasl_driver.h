@@ -1,5 +1,13 @@
 // Copyright (c) 2019 Norwegian University of Science and Technology
 // Use of this source code is governed by the LGPL-3.0 license, see LICENSE
+
+/*
+ * Author: Lars Tingelstad
+ *
+ * This file has been adapted from:
+ * https://gitlab.mech.kuleuven.be/rob-expressiongraphs/etasl_py/blob/master/include/etasl_py/etaslcppdriver.hpp
+ */
+
 #pragma once
 
 #include <string>
