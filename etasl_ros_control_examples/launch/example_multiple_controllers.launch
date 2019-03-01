@@ -12,7 +12,7 @@
   <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false" output="screen" args="position_trajectory_controller joint_state_controller"/>
 
   <rosparam file="$(find etasl_ros_control_examples)/config/multiple_controllers.yaml" command="load" subst_value="true"/>
-  <node name="controller_spawner_etasl" pkg="controller_manager" type="spawner" respawn="false" output="screen" args="--stopped etasl_controller_1 etasl_controller_2"/>
+  <node name="controller_spawner_etasl" pkg="controller_manager" type="spawner" respawn="false" output="screen" args="--stopped etasl_controller etasl_controller_2"/>
 
   <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"/>
 

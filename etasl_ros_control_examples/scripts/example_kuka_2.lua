@@ -21,7 +21,14 @@ robot_joints = {
     "joint_a6"
 }
 
-maxvel = 0.3
+j1 = ctx:getScalarExpr(robot_joints[1])
+j2 = ctx:getScalarExpr(robot_joints[2])
+j3 = ctx:getScalarExpr(robot_joints[3])
+j4 = ctx:getScalarExpr(robot_joints[4])
+j5 = ctx:getScalarExpr(robot_joints[5])
+j6 = ctx:getScalarExpr(robot_joints[6])
+
+maxvel = 0.6
 for i = 1, #robot_joints do
     BoxConstraint{
         context = ctx,
@@ -31,46 +38,53 @@ for i = 1, #robot_joints do
     }
 end
 
-tgt_x = ctx:createInputChannelScalar("tgt_x")
-tgt_y = ctx:createInputChannelScalar("tgt_y")
-tgt_z = ctx:createInputChannelScalar("tgt_z")
-
-d = Variable{context = ctx, name = "d", vartype = "feature"}
+deg2rad = math.pi / 180.0
 
 Constraint{
     context = ctx,
-    name = "laserdistance",
-    expr = d,
-    target_lower = 0.2,
-    target_upper = 0.4,
-    K = 4
-}
-
-laserspot = robot_ee * vector(0, 0, d)
-
-Constraint{
-    context = ctx,
-    name = "x",
-    expr = tgt_x - coord_x(laserspot),
+    name = "c1",
+    expr = j1,
+    target = 45 * deg2rad,
     priority = 2,
     K = 4
 }
 Constraint{
     context = ctx,
-    name = "y",
-    expr = tgt_y - coord_y(laserspot),
+    name = "c2",
+    expr = j2,
+    target = -120 * deg2rad,
     priority = 2,
     K = 4
 }
 Constraint{
     context = ctx,
-    name = "z",
-    expr = tgt_z - coord_z(laserspot),
+    name = "c3",
+    expr = j3,
+    target = 120 * deg2rad,
     priority = 2,
     K = 4
 }
-
-ctx:setOutputExpression("error_x", coord_x(laserspot) - tgt_x)
-ctx:setOutputExpression("error_y", coord_y(laserspot) - tgt_y)
-ctx:setOutputExpression("error_z", coord_z(laserspot) - tgt_z)
-ctx:setOutputExpression("laser", laserspot)
+Constraint{
+    context = ctx,
+    name = "c4",
+    expr = j4,
+    target = 0 * deg2rad,
+    priority = 2,
+    K = 4
+}
+Constraint{
+    context = ctx,
+    name = "c5",
+    expr = j5,
+    target = 45 * deg2rad,
+    priority = 2,
+    K = 4
+}
+Constraint{
+    context = ctx,
+    name = "c6",
+    expr = j6,
+    target = 45 * deg2rad,
+    priority = 2,
+    K = 4
+}

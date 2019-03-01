@@ -12,6 +12,7 @@ local r = u:getExpressions(ctx)
 
 -- The transformation of the robot mounting plate frame with respect to the robot base frame
 robot_ee = r.ee
+
 -- The name of the robot joints
 robot_joints = {
     "joint_a1",
@@ -22,14 +23,7 @@ robot_joints = {
     "joint_a6"
 }
 
-j1 = ctx:getScalarExpr(robot_joints[1])
-j2 = ctx:getScalarExpr(robot_joints[2])
-j3 = ctx:getScalarExpr(robot_joints[3])
-j4 = ctx:getScalarExpr(robot_joints[4])
-j5 = ctx:getScalarExpr(robot_joints[5])
-j6 = ctx:getScalarExpr(robot_joints[6])
-
-maxvel = 3
+maxvel = 0.3
 for i = 1, #robot_joints do
     BoxConstraint{
         context = ctx,
