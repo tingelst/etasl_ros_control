@@ -1,7 +1,9 @@
 // Copyright (c) 2019 Norwegian University of Science and Technology
 // Use of this source code is governed by the GNU LGPL-3.0 license, see LICENSE
 
-#include <etasl_ros_controllers/etasl_example_controller.h>
+/*
+ * Author: Lars Tingelstad
+ */
 
 #include <cmath>
 
@@ -10,6 +12,8 @@
 #include <hardware_interface/joint_command_interface.h>
 #include <pluginlib/class_list_macros.h>
 #include <ros/ros.h>
+
+#include <etasl_ros_controllers/etasl_example_controller.h>
 
 namespace etasl_ros_controllers
 {
