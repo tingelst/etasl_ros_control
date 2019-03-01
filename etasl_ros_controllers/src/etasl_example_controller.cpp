@@ -22,7 +22,7 @@ bool EtaslController::init(hardware_interface::RobotHW* robot_hardware, ros::Nod
     return false;
   }
 
-  if (!node_handle.getParam("/etasl/joint_names", joint_names_))
+  if (!node_handle.getParam("joints", joint_names_))
   {
     ROS_ERROR("EtaslController: Could not parse joint names");
   }
@@ -51,13 +51,14 @@ bool EtaslController::init(hardware_interface::RobotHW* robot_hardware, ros::Nod
     return false;
   }
 
-  if (!node_handle.getParam("/etasl/task_specification", task_specification_))
+  if (!node_handle.getParam("task_specification", task_specification_))
   {
     ROS_ERROR("EtaslController: Could not find task specification on parameter server");
     return false;
   }
   etasl_ = boost::make_shared<EtaslDriver>(300, 0.0, 0.0001);
-  etasl_->readTaskSpecificationString(task_specification_);
+  etasl_->readTaskSpecificationFile(task_specification_);
+  ROS_INFO_STREAM("EtaslController: Loaded task specification from \"" << task_specification_ << "\"");
 
   return true;
 }
@@ -105,8 +106,7 @@ void EtaslController::update(const ros::Time& /*time*/, const ros::Duration& per
 
 bool EtaslController::configureInput(ros::NodeHandle& node_handle)
 {
-  if (node_handle.getParam("/etasl/input/names", input_names_) &&
-      node_handle.getParam("/etasl/input/types", input_types_))
+  if (node_handle.getParam("input/names", input_names_) && node_handle.getParam("input/types", input_types_))
   {
     if (!(input_names_.size() == input_types_.size()))
     {
@@ -246,8 +246,7 @@ void EtaslController::getInput()
 
 bool EtaslController::configureOutput(ros::NodeHandle& node_handle)
 {
-  if (node_handle.getParam("/etasl/output/names", output_names_) &&
-      node_handle.getParam("/etasl/output/types", output_types_))
+  if (node_handle.getParam("output/names", output_names_) && node_handle.getParam("output/types", output_types_))
   {
     if (!(output_names_.size() == output_types_.size()))
     {
