@@ -434,7 +434,20 @@ int EtaslDriver::initialize(const DoubleMap& initialval, double initialization_t
 
 int EtaslDriver::updateStep(double dt)
 {
-  return solver_->updateStep(dt);
+  int retval = solver_->updateStep(dt);
+  if (retval != 0)
+  {
+    ROS_ERROR_STREAM("EtaslDriver:: Solver encountered error during computations in update \nMessage: "
+                     << solver_->errorMessage(retval).c_str() << "\n"
+                     << ctx_);
+    return -1;
+  }
+  ctx_->checkMonitors();
+  if (ctx_->getFinishStatus())
+  {
+    return 1;
+  }
+  return 0;
 }
 
 int EtaslDriver::solve()
