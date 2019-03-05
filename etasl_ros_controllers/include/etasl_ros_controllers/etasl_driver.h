@@ -13,6 +13,8 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <chrono>
+
 #include <boost/shared_ptr.hpp>
 #include <Eigen/Dense>
 
@@ -66,6 +68,9 @@ class EtaslDriver
    */
   bool initializeFeatureVariables(double initialization_time, double sample_time, double convergence_crit,
                                   DoubleMap& result);
+
+  bool initializeFeatureVariables(Context::Ptr ctx, solver& solver, double initialization_time, double sample_time,
+                                  double convergence_crit);
 
 public:
   /**
@@ -221,6 +226,8 @@ public:
    *  0:  no errors and no events
    */
   int solve();
+
+  int updateStep(double dt);
 
   /**
    * evaluate everything in the task specification problem

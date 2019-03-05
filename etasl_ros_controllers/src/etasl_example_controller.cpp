@@ -94,14 +94,13 @@ void EtaslController::update(const ros::Time& /*time*/, const ros::Duration& per
   etasl_->setJointPos(joint_position_map_);
 
   // Solve the optimization problem
-  etasl_->solve();
+  etasl_->updateStep(period.toSec());
 
-  // Get computed joint velocity, integrate, and set joint position command
-  etasl_->getJointVel(joint_velocity_map_);
+  // Set the desired joint positions
+  etasl_->getJointPos(joint_position_map_);
   for (size_t i = 0; i < n_joints_; ++i)
   {
-    position_joint_handles_[i].setCommand(joint_position_map_[joint_names_[i]] +
-                                          joint_velocity_map_[joint_names_[i]] * period.toSec());
+    position_joint_handles_[i].setCommand(joint_position_map_[joint_names_[i]]);
   }
 
   // Write to output channels
