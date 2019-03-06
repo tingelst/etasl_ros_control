@@ -17,9 +17,10 @@ namespace etasl_ros_controllers
 bool EtaslDriver::initializeFeatureVariables(double initialization_time, double sample_time, double convergence_crit,
                                              DoubleMap& result)
 {
-  // initialization:
+  auto start_time = std::chrono::steady_clock::now();
   if (solver_->getNrOfFeatureStates() > 0)
   {
+    ROS_INFO_STREAM("EtaslDriver::initializeFeatureVariables: Initialization started");
     double t;
     for (t = 0; t < initialization_time; t += sample_time)
     {
@@ -27,8 +28,8 @@ bool EtaslDriver::initializeFeatureVariables(double initialization_time, double 
       if (retval != 0)
       {
         ROS_ERROR_STREAM(
-            "initialize_feature_variables: solver encountered the following error during initialization (t=" << t
-                                                                                                             << " )");
+            "EtaslDriver::initializeFeatureVariables: Solver encountered the following error during initialization (t="
+            << t << ")");
         ROS_ERROR_STREAM(solver_->errorMessage(retval));
         ROS_ERROR_STREAM(ctx_);
         return false;
@@ -37,7 +38,11 @@ bool EtaslDriver::initializeFeatureVariables(double initialization_time, double 
       if (norm_change <= convergence_crit)
         break;
     }
+    auto stop_time = std::chrono::steady_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::duration<double>>(stop_time - start_time).count();
+    ROS_INFO_STREAM("EtaslDriver::initializeFeatureVariables: Initialization time: " << duration << " [s]");
   }
+  solver_->setInitialValues();  // sets the initial value fields of variables in the context.
   int nr = getJointPos(result, 3);
 
   if (nr < 0)
@@ -48,7 +53,6 @@ bool EtaslDriver::initializeFeatureVariables(double initialization_time, double 
   {
     return true;
   }
-  // solver_->setInitialValues(); // sets the initial value fields of variables in the context.
 }
 
 EtaslDriver::EtaslDriver(int nWSR, double cputime, double regularization_factor)
@@ -292,7 +296,7 @@ void EtaslDriver::getOutput(DoubleMap& dmap)
 {
   for (Context::OutputVarMap::iterator it = ctx_->output_vars.begin(); it != ctx_->output_vars.end(); it++)
   {
-    Expression<double>::Ptr expr = boost::dynamic_pointer_cast<Expression<double> >(it->second);
+    Expression<double>::Ptr expr = boost::dynamic_pointer_cast<Expression<double>>(it->second);
     if (expr)
     {
       dmap[it->first] = expr->value();
@@ -304,7 +308,7 @@ void EtaslDriver::getOutput(FrameMap& fmap)
 {
   for (Context::OutputVarMap::iterator it = ctx_->output_vars.begin(); it != ctx_->output_vars.end(); it++)
   {
-    Expression<Frame>::Ptr expr = boost::dynamic_pointer_cast<Expression<Frame> >(it->second);
+    Expression<Frame>::Ptr expr = boost::dynamic_pointer_cast<Expression<Frame>>(it->second);
     if (expr)
     {
       fmap[it->first] = expr->value();
@@ -316,7 +320,7 @@ void EtaslDriver::getOutput(VectorMap& vmap)
 {
   for (Context::OutputVarMap::iterator it = ctx_->output_vars.begin(); it != ctx_->output_vars.end(); it++)
   {
-    Expression<Vector>::Ptr expr = boost::dynamic_pointer_cast<Expression<Vector> >(it->second);
+    Expression<Vector>::Ptr expr = boost::dynamic_pointer_cast<Expression<Vector>>(it->second);
     if (expr)
     {
       vmap[it->first] = expr->value();
@@ -328,7 +332,7 @@ void EtaslDriver::getOutput(RotationMap& rmap)
 {
   for (Context::OutputVarMap::iterator it = ctx_->output_vars.begin(); it != ctx_->output_vars.end(); it++)
   {
-    Expression<Rotation>::Ptr expr = boost::dynamic_pointer_cast<Expression<Rotation> >(it->second);
+    Expression<Rotation>::Ptr expr = boost::dynamic_pointer_cast<Expression<Rotation>>(it->second);
     if (expr)
     {
       rmap[it->first] = expr->value();
@@ -340,7 +344,7 @@ void EtaslDriver::getOutput(TwistMap& tmap)
 {
   for (Context::OutputVarMap::iterator it = ctx_->output_vars.begin(); it != ctx_->output_vars.end(); it++)
   {
-    Expression<Twist>::Ptr expr = boost::dynamic_pointer_cast<Expression<Twist> >(it->second);
+    Expression<Twist>::Ptr expr = boost::dynamic_pointer_cast<Expression<Twist>>(it->second);
     if (expr)
     {
       tmap[it->first] = expr->value();
@@ -419,14 +423,29 @@ int EtaslDriver::initialize(const DoubleMap& initialval, double initialization_t
   retval = solver_->solve();
   if (retval != 0)
   {
-    ROS_INFO_STREAM("solver encountered the following error during the first solve in initialize \nmessage: "
-                    << solver_->errorMessage(retval).c_str()
-                    << "\n stop() will be called on etasl "
-                       "rtt component and e_error event "
-                       "will be send"
-                    << "\n");
+    ROS_ERROR_STREAM("EtaslDriver::initialize: Solver encountered the following error during the first solve in "
+                     "initialize \nMessage: "
+                     << solver_->errorMessage(retval).c_str());
     initialized_ = false;
     return -4;
+  }
+  return 0;
+}
+
+int EtaslDriver::updateStep(double dt)
+{
+  int retval = solver_->updateStep(dt);
+  if (retval != 0)
+  {
+    ROS_ERROR_STREAM("EtaslDriver:: Solver encountered error during computations in update \nMessage: "
+                     << solver_->errorMessage(retval).c_str() << "\n"
+                     << ctx_);
+    return -1;
+  }
+  ctx_->checkMonitors();
+  if (ctx_->getFinishStatus())
+  {
+    return 1;
   }
   return 0;
 }
