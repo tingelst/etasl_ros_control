@@ -91,8 +91,23 @@ And, finally back to the joint trajectory controller:
 rosservice call /controller_manager/switch_controller [position_trajectory_controller] [etasl_controller_2] 2
 ```
 
-
-
+### SMACH for discrete controller switching
+The multiple controllers can be used in a [SMACH](https://wiki.ros.org/smach) example. First clone the [executive_smach](https://github.com/ros/executive_smach) and the [smach_visualizations](https://github.com/ros-visualization/executive_smach_visualization) repositories into your workspace.
+```bash
+cd ./src/
+git clone git@github.com:ros/executive_smach.git
+git clone git@github.com:ros-visualization/executive_smach_visualization.git
+```
+Build and source the workspace again:
+```bash
+cd ..
+catkin_make --cmake-args -DCMAKE_BUILD_TYPE=Release
+source ./devel/setup.bash
+```
+then finally run the smach example
+```
+roslaunch etasl_ros_control_examples example_smach.launch
+```
 
 ## Acknowledgements
 
