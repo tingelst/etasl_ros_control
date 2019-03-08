@@ -16,7 +16,7 @@
 
   <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"/>
 
-  <node name='kuka_rsi_simulator' pkg='kuka_rsi_simulator' type="kuka_rsi_simulator" args="127.0.0.1 49152" if="$(arg sim)"/>
+  <node name="kuka_rsi_simulator" pkg="kuka_rsi_simulator" type="kuka_rsi_simulator" args="127.0.0.1 49152" if="$(arg sim)"/>
 
   <node name="rviz" pkg="rviz" type="rviz" args="-d $(find industrial_robot_client)/config/robot_state_visualize.rviz" required="true"/>
 
