@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<launch>
+  <arg name="sim" default="true"/>
+
+  <include file="$(find kuka_kr6_support)/launch/load_kr6r900sixx.launch"/>
+
+  <rosparam file="$(find kuka_rsi_hw_interface)/config/controller_joint_names.yaml" command="load"/>
+  <rosparam file="$(find kuka_rsi_hw_interface)/test/test_params_sim.yaml" command="load" if="$(arg sim)"/>
+  <rosparam file="$(find kuka_rsi_hw_interface)/test/test_params.yaml" command="load" unless="$(arg sim)"/>
+  <node name="kuka_hardware_interface" pkg="kuka_rsi_hw_interface" type="kuka_hardware_interface_node" respawn="false" output="screen" required="true"/>
+
+  <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false" output="screen" args="position_trajectory_controller joint_state_controller"/>
+
+  <rosparam file="$(find etasl_ros_control_examples)/config/multiple_controllers.yaml" command="load" subst_value="true"/>
+  <node name="controller_spawner_etasl" pkg="controller_manager" type="spawner" respawn="false" output="screen" args="--stopped etasl_controller etasl_controller_2"/>
+
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"/>
+
+  <node name="kuka_rsi_simulator" pkg="kuka_rsi_simulator" type="kuka_rsi_simulator" args="127.0.0.1 49152" if="$(arg sim)"/>
+
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find industrial_robot_client)/config/robot_state_visualize.rviz" required="true"/>
+
+  <node name="target_publisher" pkg="etasl_ros_control_examples" type="target_publisher.py" required="true"/>
+  <node name="smach_viz" pkg="smach_viewer" type="smach_viewer.py"/>
+  <node name="smach_example" pkg="etasl_ros_control_examples" type="smach_example.py" required="true"/>
+</launch>
