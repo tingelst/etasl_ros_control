@@ -21,4 +21,6 @@
   <node name="rviz" pkg="rviz" type="rviz" args="-d $(find industrial_robot_client)/config/robot_state_visualize.rviz" required="true"/>
 
   <node name="target_publisher" pkg="etasl_ros_control_examples" type="target_publisher.py" required="true"/>
+  <node name="smach_viz" pkg="smach_viewer" type="smach_viewer.py"/>
+  <node name="smach_example" pkg="etasl_ros_control_examples" type="smach_example.py" required="true"/>
 </launch>
