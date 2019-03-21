@@ -10,6 +10,7 @@ find_package(catkin REQUIRED COMPONENTS
   expressiongraph_context
   expressiongraph_context_lua
   expressiongraph_solver_qpoases
+  expressiongraph_collision
   controller_interface
   dynamic_reconfigure
   kdl_conversions
@@ -22,6 +23,7 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 find_package(Eigen3 REQUIRED)
+find_package( Bullet REQUIRED)
 
 # add_message_files(FILES
 #   JointTorqueComparison.msg
@@ -35,11 +37,12 @@ find_package(Eigen3 REQUIRED)
 # )
 
 catkin_package(
-  LIBRARIES etasl_ros_controllers
+  LIBRARIES etasl_ros_controllers ${BULLET_LIBRARIES}
   CATKIN_DEPENDS
     expressiongraph_context
     expressiongraph_context_lua
     expressiongraph_solver_qpoases
+    expressiongraph_collision
     controller_interface
     dynamic_reconfigure
     kdl_conversions
