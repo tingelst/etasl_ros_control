@@ -12,7 +12,6 @@ robotiq_frame = r.endeff
 
 
 pi = cached(acos(constant(-1.0)))
--- SWtrans = translate_z(0.02)*translate_y(0.5)*(rotate_z(-pi/2)*rotate_x(pi/2))
 SWtrans = translate_z(0.02)*translate_y(0.5)*rotate_x(pi/2)
 
 
