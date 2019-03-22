@@ -4,6 +4,7 @@ joint_state_controller:
   publish_rate: 50
   extra_joints:
     - name: 'finger_joint'
+      position: 0.6
 
 # eTaSl example controller
 etasl_controller:
@@ -15,4 +16,29 @@ etasl_controller:
     - joint_a4
     - joint_a5
     - joint_a6
+  input:
+    names:
+      - "force_z"
+      - "tgt_x"
+      - "tgt_y"
+      - "tgt_z"
+      # - "scan_point_x"
+      # - "scan_point_y"
+      # - "scan_point_z"
+      # - "scan_quaternion_x"
+      # - "scan_quaternion_y"
+      # - "scan_quaternion_z"
+      # - "scan_quaternion_w"
+    types:
+      - "Scalar"
+      - "Scalar"
+      - "Scalar"
+      - "Scalar"
+      # - "Scalar"
+      # - "Scalar"
+      # - "Scalar"
+      # - "Scalar"
+      # - "Scalar"
+      # - "Scalar"
+      # - "Scalar"
   task_specification: "$(find etasl_ros_control_examples)/scripts/example_peg_in_hole.lua"

@@ -10,10 +10,23 @@ u:addTransform("endeff","ee","base_link")
 local r = u:getExpressions(ctx)
 robotiq_frame = r.endeff
 
+force_z = ctx:createInputChannelScalar("force_z")
+tgt_x = ctx:createInputChannelScalar("tgt_x")
+tgt_y = ctx:createInputChannelScalar("tgt_y")
+tgt_z = ctx:createInputChannelScalar("tgt_z")
+
+d = Variable{context = ctx, name = "d", vartype = "feature"}
+-- scan_point_x = ctx:createInputChannelScalar("scan_point_x")
+-- scan_point_y = ctx:createInputChannelScalar("scan_point_y")
+-- scan_point_z = ctx:createInputChannelScalar("scan_point_z")
+-- scan_quaternion_x = ctx:createInputChannelScalar("scan_quaternion_x")
+-- scan_quaternion_y = ctx:createInputChannelScalar("scan_quaternion_y")
+-- scan_quaternion_z = ctx:createInputChannelScalar("scan_quaternion_z")
+-- scan_quaternion_w = ctx:createInputChannelScalar("scan_quaternion_w")
+
 
 pi = cached(acos(constant(-1.0)))
 SWtrans = translate_z(0.02)*translate_y(0.5)*rotate_x(pi/2)
-
 
 -- PICKUP PEG CONSTRAINTS
 robotiq_orig = origin(robotiq_frame*translate_z(0.105))
@@ -106,25 +119,76 @@ Constraint{
 }
 ctx:popGroup()
 
+-- NEVER COLLIDE WITH TABLE
+table = Box(1.57, 0.8, 0.87)
+robotiq_coll = CapsuleZ(0.065,0.01)
+
+ctx:pushGroup("safety")
+Constraint{
+    context         = ctx,
+    name            = "NoCollisionWithTable",
+    expr            = distance_between(frame(vector(-0.895, 0.2, -0.85)),table,0.0,0.01, robotiq_frame,robotiq_coll,0.0,0.01),
+    target_lower    = 0.01,
+    target_upper    = 1.0,
+    K               = 1.0,
+    weight          = 1.0,
+    priority        = 1
+}
+ctx:popGroup()
+
 -- COLLISION AVOIDANCE CONSTRAINT
-holes = Box(0.25, 0.05 , 0.025)
+holes = Box(0.25, 0.025 , 0.05)
 peg = CylinderZ(0.02, 0.02, 0.05)
 
 ctx:pushGroup("collision")
 Constraint{
     context         = ctx,
     name            = "CollisionAvoidance",
-    expr            = distance_between(robotiq_frame*translate_z(0.105),peg,0,0.01, SWtrans*frame(vector(0,0,0)),holes,0,0.01),
+    expr            = distance_between(robotiq_frame*translate_z(0.105),peg,0.0,0.01, SWtrans*frame(vector(0,0,-0.05)),holes,0.0,0.01),
     target_lower    = 0.01,
-    target_upper    = 0.1,
-    K               = 1,
+    target_upper    = 1.0,
+    K               = 1.0,
     weight          = 2.0,
     priority        = 2
 }
 ctx:popGroup()
 
-ctx:activate_cmd("+global.lineup +global.insertion") -- +global.pickup +global.lineup +global.insertion +global.collision")
+laserspot = robotiq_frame * vector(0, 0, d)
 
+--LISSAJOUS CONSTRAINTS
+ctx:pushGroup("lissajous")
+Constraint{
+    context = ctx,
+    name = "x",
+    expr = tgt_x - coord_x(laserspot) + coord_x(L2_orig),
+    priority = 2,
+    K = 10
+}
+Constraint{
+    context = ctx,
+    name = "y",
+    expr = tgt_y - coord_y(laserspot) + coord_y(L2_orig),
+    priority = 2,
+    K = 10
+}
+Constraint{
+    context = ctx,
+    name = "z",
+    expr = tgt_z - coord_z(laserspot) + coord_z(L2_orig),
+    priority = 2,
+    K = 10
+}
+ctx:popGroup()
+
+
+ctx:activate_cmd("+global.pickup +global.safety") 
+print(ctx)
+
+ctx:activate_cmd("-global.pickup +global.lineup +global.collision") 
+print(ctx)
+
+ctx:activate_cmd("-global.collision +global.insertion +global.lissajous") 
+print(ctx)
 
 -- Monitor{
 --     context     = ctx,
@@ -134,6 +198,3 @@ ctx:activate_cmd("+global.lineup +global.insertion") -- +global.pickup +global.l
 --     actionname  = "exit",
 --     action      = "active: -global.pickup +global.lineup"
 -- }
-
-
-print(ctx)
