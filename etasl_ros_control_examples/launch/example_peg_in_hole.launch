@@ -18,6 +18,5 @@
 
     <node name="rviz" pkg="rviz" type="rviz" args="-d $(find kuka_lab_setup)/config/zero_state_robotiq.rviz" required="true"/>
 
-    <node name="target_publisher" pkg="etasl_ros_control_examples" type="target_publisher.py" required="true"/>
-    <!-- <node name="lissajous_publisher" pkg="etasl_ros_control_examples" type="lissajous_publisher.py" required="true"/> -->
+    <node name="target_publisher" pkg="etasl_ros_control_examples" type="lissajous_publisher.py" required="true"/>
 </launch>

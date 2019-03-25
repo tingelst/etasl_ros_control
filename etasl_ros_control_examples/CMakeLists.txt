@@ -11,6 +11,6 @@ install(DIRECTORY launch config scripts
 )
 
 catkin_install_python(
-  PROGRAMS scripts/target_publisher.py
+  PROGRAMS scripts/target_publisher.py scripts/lissajous_publisher.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
