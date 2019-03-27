@@ -40,8 +40,8 @@ for i=2,5 do
 end 
 
 -- NEVER COLLIDE WITH TABLE
-table = Box(0.8, 1.53, 0.87) --ConvexObject("/home/daglof/table.obj") --
-robotiq_coll = CapsuleZ(0.065,0.0)
+table = ConvexObject(rospack_find("etasl_ros_control_examples").."/mesh/table.obj") --Box(0.8, 1.53, 0.87)
+robotiq_coll = ConvexObject(rospack_find("etasl_ros_control_examples").."/mesh/robotiq_base_link.obj") --CapsuleZ(0.065,0.0)
 
 ctx:pushGroup("safety")
 Constraint{
@@ -51,7 +51,7 @@ Constraint{
     target_lower    = 0.01, --target_upper    = 2.0,
     K               = 1.0,
     weight          = 1.0,
-    priority        = 2,
+    priority        = 2
 }
 ctx:popGroup()
 

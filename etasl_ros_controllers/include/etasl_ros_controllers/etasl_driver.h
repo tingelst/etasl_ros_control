@@ -183,6 +183,12 @@ public:
   void readTaskSpecificationString(const std::string& taskspec);
 
   /**
+   * reads commands for activation/deactivation of constraints 
+   * and configures the controller accordingly.
+   */
+  void activation_command(const std::string& command);
+
+  /**
    * Performs the following tasks in this order:
    *  1) prepares the solver for the initialization problem
    *  2) initializes the state (robot/feature names, values and velocities)

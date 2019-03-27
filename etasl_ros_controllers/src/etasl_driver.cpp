@@ -86,6 +86,11 @@ void EtaslDriver::readTaskSpecificationString(const std::string& taskspec)
   etaslread = true;
 }
 
+void EtaslDriver::activation_command(const std::string& command)
+{
+  etaslread = ctx_->activate_cmd(command);
+}
+
 int EtaslDriver::setInput(const DoubleMap& dmap)
 {
   for (auto item : dmap)
