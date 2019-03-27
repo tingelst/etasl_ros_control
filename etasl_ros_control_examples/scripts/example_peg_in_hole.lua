@@ -14,16 +14,9 @@ force_z = ctx:createInputChannelScalar("force_z")
 tgt_x = ctx:createInputChannelScalar("tgt_x")
 tgt_y = ctx:createInputChannelScalar("tgt_y")
 tgt_z = ctx:createInputChannelScalar("tgt_z")
+block_frame = ctx:createInputChannelFrame("block_frame")
 
 d = Variable{context = ctx, name = "d", vartype = "feature"}
--- scan_point_x = ctx:createInputChannelScalar("scan_point_x")
--- scan_point_y = ctx:createInputChannelScalar("scan_point_y")
--- scan_point_z = ctx:createInputChannelScalar("scan_point_z")
--- scan_quaternion_x = ctx:createInputChannelScalar("scan_quaternion_x")
--- scan_quaternion_y = ctx:createInputChannelScalar("scan_quaternion_y")
--- scan_quaternion_z = ctx:createInputChannelScalar("scan_quaternion_z")
--- scan_quaternion_w = ctx:createInputChannelScalar("scan_quaternion_w")
-
 
 pi = cached(acos(constant(-1.0)))
 SWtrans = translate_z(0.02)*translate_y(0.5)*rotate_x(pi/2)
@@ -31,8 +24,9 @@ SWtrans = translate_z(0.02)*translate_y(0.5)*rotate_x(pi/2)
 -- PICKUP PEG CONSTRAINTS
 robotiq_orig = origin(robotiq_frame*translate_z(0.105))
 robotiq_dir = -unit_z(rotation(robotiq_frame))
-peg_orig = origin(SWtrans * frame(vector(0.5, 0.0, 0.0))) --Can this be an input from the Zivid camera??
-peg_dir = vector(0.0, 0.0, 1.0) --Can this be an input from the Zivid camera??
+peg_orig = origin(SWtrans * frame(vector(0.5, 0.0, 0.0))) --origin(block_frame)
+peg_dir = vector(0.0, 0.0, 1.0) --unit_z(rotation(block_frame))
+--peg_orig = origin(SWtrans * frame(vector(0.5, -0.1, 0.0))) --Can this be an input from the Zivid camera??
 
 ctx:pushGroup("pickup_lineup")
 coincident_line_line(robotiq_orig,robotiq_dir,peg_orig,peg_dir,
@@ -99,7 +93,7 @@ Constraint{
     target_lower    = 0.01, --target_upper    = 2.0,
     K               = 1.0,
     weight          = 1.0,
-    priority        = 2
+    priority        = 2,
 }
 ctx:popGroup()
 
@@ -160,9 +154,9 @@ print(ctx)
 ctx:activate_cmd("-global.collision +global.insertion_closein")  
 print(ctx)
 
---If force too large
-ctx:activate_cmd("+global.lissajous")
-print(ctx)
+-- --If force too large
+-- ctx:activate_cmd("+global.lissajous")
+-- print(ctx)
 
 -- Monitor{
 --     context     = ctx,
@@ -172,3 +166,6 @@ print(ctx)
 --     actionname  = "exit",
 --     action      = "active: -global.pickup +global.lineup"
 -- }
+
+-- ctx:activate_cmd("+global.pickup_lineup +global.pickup_closein +global.safety") 
+-- print(ctx)
