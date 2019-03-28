@@ -11,8 +11,16 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
-  <depend>universal_robot</depend>
-  <depend>kuka_experimental</depend>
+  <depend>gazebo_ros</depend>
+  <depend>ur_description</depend>
+  <depend>ur_gazebo</depend>
+  <depend>kuka_kr6_support</depend>
+  <depend>kuka_rsi_hw_interface</depend>
+  <depend>kuka_rsi_simulator</depend>
+  <depend>controller_manager</depend>
+  <depend>smach</depend>
+  <depend>smach_ros</depend>
+  <depend>smach_viewer</depend>
 
   <exec_depend>rospy</exec_depend>
 </package>
