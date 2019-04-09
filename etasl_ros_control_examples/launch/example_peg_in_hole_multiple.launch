@@ -20,4 +20,7 @@
 
     <node name="target_publisher" pkg="etasl_ros_control_examples" type="lissajous_publisher.py" required="true"/>
     <node name="zivid_publisher" pkg="etasl_ros_control_examples" type="zivid_publisher.py" required="true"/>
+    <node name="smach_viz" pkg="smach_viewer" type="smach_viewer.py"/>
+    <node name="smach_peg_in_hole" pkg="etasl_ros_control_examples" type="smach_peg_in_hole.py" required="true"/>
+    
 </launch>

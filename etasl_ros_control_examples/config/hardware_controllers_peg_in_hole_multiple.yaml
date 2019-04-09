@@ -39,4 +39,9 @@ etasl_controller:
       - "Frame"
       - "Frame"
       - "Frame"
+  output:
+    names:
+      - "e_event"
+    types:
+      - "Event"
   task_specification: "$(find etasl_ros_control_examples)/scripts/example_peg_in_hole_multiple.lua"

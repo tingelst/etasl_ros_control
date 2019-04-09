@@ -22,9 +22,11 @@
 #include <expressiongraph/qpoases_solver.hpp>
 #include <expressiongraph/context_scripting.hpp>
 #include <expressiongraph/defaultobserver.hpp>
+#include <expressiongraph/groupingobserver.hpp>
 #include <expressiongraph/outputs_ros_lines.hpp>
 
 #include <ros/ros.h>
+#include <std_msgs/String.h>
 
 using namespace KDL;
 
@@ -187,6 +189,8 @@ public:
    * and configures the controller accordingly.
    */
   void activation_command(const std::string& command);
+
+  int checkFinishStatus();
 
   /**
    * Performs the following tasks in this order:

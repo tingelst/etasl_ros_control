@@ -10,18 +10,6 @@ from std_msgs.msg import Float64, Header, ColorRGBA
 from visualization_msgs.msg import Marker
 from geometry_msgs.msg import PoseStamped, Pose, Point, Quaternion, Vector3
 
-etasl_block_frame = rospy.Publisher(
-    '/etasl_controller/block_frame', Pose, queue_size=3)
-etasl_peg1_frame = rospy.Publisher(
-    '/etasl_controller/peg1_frame', Pose, queue_size=3)
-etasl_peg2_frame = rospy.Publisher(
-    '/etasl_controller/peg2_frame', Pose, queue_size=3)
-etasl_peg3_frame = rospy.Publisher(
-    '/etasl_controller/peg3_frame', Pose, queue_size=3)
-etasl_peg4_frame = rospy.Publisher(
-    '/etasl_controller/peg4_frame', Pose, queue_size=3)
-etasl_peg5_frame = rospy.Publisher(
-    '/etasl_controller/peg5_frame', Pose, queue_size=3)
 
 rviz_block_frame = rospy.Publisher(
     '/rviz/block_frame', PoseStamped, queue_size=3)
@@ -52,33 +40,33 @@ if __name__ == "__main__":
 
     rospy.init_node('zivid_publisher')
 
-    rate = rospy.Rate(1)
+    rate = rospy.Rate(10)
     try:
         while not rospy.is_shutdown():
             block_frame=Pose(
-                position=Point(0.0, 0.5, 0.02), 
+                position=Point(0.0, 0.5-1.0, 0.02), 
                 #orientation=Quaternion(np.pi/2.0, 0.0, 0.0, np.pi/2.0)
                 orientation=Quaternion(0.5, -0.5, -0.5, 0.5)
                 #orientation=Quaternion(0.654021, 0.652994, 0.270263, 0.269839)
             )
             peg1_frame=Pose(
-                position=Point(0.3, 0.4, 0.02), 
+                position=Point(0.3, 0.4-1.0, 0.02), 
                 orientation=Quaternion(0.0, 0.0, 0.0, 1.0)
             )
             peg2_frame=Pose(
-                position=Point(0.5, 0.4, 0.02),
+                position=Point(0.5, 0.4-1.0, 0.02),
                 orientation=Quaternion(0.0, 0.0, 0.0, 1.0)
             )
             peg3_frame=Pose(
-                position=Point(0.35, 0.5, 0.02), 
+                position=Point(0.35, 0.5-1.0, 0.02), 
                 orientation=Quaternion(0.0, 0.0, 0.0, 1.0)
             )      
             peg4_frame=Pose(
-                position=Point(0.45, 0.57, 0.02), 
+                position=Point(0.45, 0.57-1.0, 0.02), 
                 orientation=Quaternion(0.0, 0.0, 0.0, 1.0)
             )   
             peg5_frame=Pose(
-                position=Point(0.2, 0.6, 0.02), 
+                position=Point(0.2, 0.6-1.0, 0.02), 
                 orientation=Quaternion(0.0, 0.0, 0.0, 1.0)
             )
 
@@ -107,12 +95,6 @@ if __name__ == "__main__":
                 pose=peg5_frame
             )
 
-            etasl_block_frame.publish(block_frame)
-            etasl_peg1_frame.publish(peg1_frame)
-            etasl_peg2_frame.publish(peg2_frame)
-            etasl_peg3_frame.publish(peg3_frame)
-            etasl_peg4_frame.publish(peg4_frame)
-            etasl_peg5_frame.publish(peg5_frame)
             rviz_block_frame.publish(block_frame_s)
             rviz_peg1_frame.publish(peg1_frame_s)
             rviz_peg2_frame.publish(peg2_frame_s)

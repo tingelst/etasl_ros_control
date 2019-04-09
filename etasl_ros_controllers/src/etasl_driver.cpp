@@ -67,6 +67,7 @@ EtaslDriver::EtaslDriver(int nWSR, double cputime, double regularization_factor)
   solver_ = boost::make_shared<qpOASESSolver>(nWSR, cputime, regularization_factor);
 
   obs_ = create_default_observer(ctx_, "exit");
+  //obs_ = create_grouping_observer(ctx_);
   ctx_->addDefaultObserver(obs_);
 
   etaslread = false;
@@ -89,6 +90,16 @@ void EtaslDriver::readTaskSpecificationString(const std::string& taskspec)
 void EtaslDriver::activation_command(const std::string& command)
 {
   etaslread = ctx_->activate_cmd(command);
+}
+
+int EtaslDriver::checkFinishStatus()
+{
+  ctx_->checkMonitors();
+  if (ctx_->getFinishStatus())
+  {
+    return 1;
+  }
+  return 0;
 }
 
 int EtaslDriver::setInput(const DoubleMap& dmap)
@@ -357,6 +368,18 @@ void EtaslDriver::getOutput(TwistMap& tmap)
   }
 }
 
+// void EtaslDriver::getOutput(EventMap& emap)
+// {
+//   for (Context::OutputVarMap::iterator it = ctx_->output_vars.begin(); it != ctx_->output_vars.end(); it++)
+//   {
+//     std::string expr = boost::dynamic_pointer_cast<std::string>(it->second);
+//     if (expr)
+//     {
+//       emap[it->first] = expr->value();
+//     }
+//   }
+// }
+
 int EtaslDriver::initialize(const DoubleMap& initialval, double initialization_time, double sample_time,
                             double convergence_crit, DoubleMap& convergedval)
 {
@@ -447,12 +470,13 @@ int EtaslDriver::updateStep(double dt)
                      << ctx_);
     return -1;
   }
-  ctx_->checkMonitors();
-  if (ctx_->getFinishStatus())
-  {
-    return 1;
-  }
-  return 0;
+  // ctx_->checkMonitors();
+  // if (ctx_->getFinishStatus())
+  // {
+  //   return 1;
+  // }
+  // return 0;
+  return checkFinishStatus();
 }
 
 int EtaslDriver::solve()
@@ -467,12 +491,13 @@ int EtaslDriver::solve()
                     << ctx_);
     return -1;
   }
-  ctx_->checkMonitors();
-  if (ctx_->getFinishStatus())
-  {
-    return 1;
-  }
-  return 0;
+  // ctx_->checkMonitors();
+  // if (ctx_->getFinishStatus())
+  // {
+  //   return 1;
+  // }
+  // return 0;
+  return checkFinishStatus();
 }
 
 void EtaslDriver::evaluate()

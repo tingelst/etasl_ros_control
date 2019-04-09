@@ -40,15 +40,15 @@ for i=2,5 do
 end 
 
 -- NEVER COLLIDE WITH TABLE
-table = ConvexObject(rospack_find("etasl_ros_control_examples").."/mesh/table.obj") --Box(0.8, 1.53, 0.87)
-robotiq_coll = ConvexObject(rospack_find("etasl_ros_control_examples").."/mesh/robotiq_base_link.obj") --CapsuleZ(0.065,0.0)
+table = Box(0.8, 1.53, 0.87)--ConvexObject(rospack_find("etasl_ros_control_examples").."/mesh/table.obj") --
+robotiq_coll = CapsuleZ(0.065,0.0)--ConvexObject(rospack_find("etasl_ros_control_examples").."/mesh/robotiq_base_link.obj") --CapsuleZ(0.065,0.0)--
 
 ctx:pushGroup("safety")
 Constraint{
     context         = ctx,
     name            = "NoCollisionWithTable",
-    expr            = distance_between(frame(rot_z(pi/2),vector(0.675, 0.2, -0.85)),table,0.0,0.01, robotiq_frame*translate_z(-0.055),robotiq_coll,0.0,0.01),
-    target_lower    = 0.01, --target_upper    = 2.0,
+    expr            = distance_between(frame(rot_z(pi/2),vector(0.675, -1.0, -0.85)),table,0.0025,0.0, robotiq_frame*translate_z(0.5),robotiq_coll,0.0025,0.0),--
+    target_lower    = 0.1, --target_upper    = 2.0,
     K               = 1.0,
     weight          = 1.0,
     priority        = 2
@@ -56,15 +56,15 @@ Constraint{
 ctx:popGroup()
 
 -- COLLISION AVOIDANCE CONSTRAINT
-holes = Box(0.25, 0.025 , 0.05)
-peg = CylinderZ(0.02, 0.02, 0.05)
+holes = ConvexObject(rospack_find("etasl_ros_control_examples").."/mesh/block.obj")--Box(0.25, 0.025 , 0.05)--
+peg = ConvexObject(rospack_find("etasl_ros_control_examples").."/mesh/peg.obj")--CylinderZ(0.02, 0.02, 0.05)--
 
 ctx:pushGroup("collision")
 Constraint{
     context         = ctx,
     name            = "CollisionAvoidance",
-    expr            = distance_between(robotiq_frame*translate_z(0.055),peg,0.0,0.01, block_frame*frame(vector(0,0,-0.05)),holes,0.0,0.01),
-    target_lower    = 0.1, --target_upper    = 1.0,
+    expr            = distance_between(robotiq_frame*translate_z(0.055),peg,0.0025,0.0, block_frame,holes,0.0025,0.0),--
+    target_lower    = 0.01, --target_upper    = 1.0,
     K               = 1.0,
     weight          = 2.0,
     priority        = 2
@@ -95,6 +95,14 @@ for i=1,5 do
         1.5,
         2
     )
+    Monitor{
+        context = ctx,
+        name = "pickup_lineup_reached",
+        expr = distance_line_line(pegInGripper_orig,pegInGripper_dir,origin( peg_frame[i] ),unit_z(rotation( peg_frame[i] ))),
+        lower = 1E-3,
+        actionname = "activate",
+        argument = "+global.pickup_closein_"..i
+    }
     ctx:popGroup()
 
     ctx:pushGroup("pickup_closein_"..i)
@@ -149,7 +157,7 @@ for i=1,5 do
 
 end
 
--- ctx:activate_cmd("+global.pickup_lineup_1 +global.pickup_closein_1")
+ctx:activate_cmd("+global.pickup_lineup_1")
 -- print(ctx)
 -- ctx:activate_cmd("+global.pickup_lineup_2 +global.pickup_closein_2")
 -- print(ctx)
@@ -159,8 +167,17 @@ end
 -- print(ctx)
 -- ctx:activate_cmd("+global.pickup_lineup_5 +global.pickup_closein_5")
 -- print(ctx)
-ctx:activate_cmd("+global.insertion_lineup_1")-- +global.insertion_closein")
-print(ctx)
+
+--ctx:activate_cmd("-global.pickup_lineup_1 +global.insertion_lineup_3 +global.insertion_closein")
+
+
+-- ctx:setOutputExpression("laser", laserspot)
+ctx:setOutputExpression("e_event", constant(0.0))
+
+--print(ctx)
+
+-- ctx:activate_cmd("+global.insertion_closein")
+-- print(ctx)
 
 
 -- for i=1,5 do

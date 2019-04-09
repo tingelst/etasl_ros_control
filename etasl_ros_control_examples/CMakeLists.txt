@@ -11,6 +11,14 @@ install(DIRECTORY launch config scripts
 )
 
 catkin_install_python(
-  PROGRAMS scripts/target_publisher.py scripts/lissajous_publisher.py scripts/zivid_publisher.py
+  PROGRAMS 
+  scripts/target_publisher.py 
+  scripts/lissajous_publisher.py 
+  scripts/zivid_publisher.py
+  scripts/etasl_publisher_1.py
+  scripts/etasl_publisher_2.py
+  scripts/etasl_publisher_3.py
+  scripts/etasl_publisher_4.py
+  scripts/speed_pub.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )

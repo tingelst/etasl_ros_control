@@ -21,6 +21,7 @@
 #include <ros/time.h>
 #include <kdl_conversions/kdl_msg.h>
 #include <std_msgs/Float64.h>
+#include <std_msgs/String.h>
 #include <realtime_tools/realtime_publisher.h>
 #include <realtime_tools/realtime_buffer.h>
 
@@ -124,6 +125,10 @@ private:
   TwistMap twist_output_map_;
   size_t n_twist_outputs_{};
   std::vector<boost::shared_ptr<realtime_tools::RealtimePublisher<geometry_msgs::Twist>>> twist_realtime_pubs_;
+
+  std::vector<std::string> event_output_names_;
+  size_t n_event_outputs_{};
+  std::vector<boost::shared_ptr<realtime_tools::RealtimePublisher<std_msgs::String>>> event_realtime_pubs_;
 
   std::string task_specification_;
   boost::shared_ptr<EtaslDriver> etasl_;

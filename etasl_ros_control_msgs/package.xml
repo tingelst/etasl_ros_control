@@ -1,0 +1,20 @@
+<package>
+  <name>etasl_ros_control_msgs</name>  
+  <version>0.0.1</version>
+  <description>etasl_ros_control_msgs</description>
+  <maintainer email="lars.tingelstad@ntnu.no">Lars Tingelstad</maintainer>
+  <license>LGPL-3.0</license>
+
+  <url type="repository">https://github.com/tingelst/etasl_ros_control</url>
+  <url type="bugtracker">https://github.com/tingelst/etasl_ros_control/issues</url>
+  <author>Lars Tingelstad</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>message_generation</build_depend>
+
+  <run_depend>message_runtime</run_depend>
+
+</package>
+
+

@@ -7,6 +7,7 @@ set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(catkin REQUIRED COMPONENTS
+  etasl_ros_control_msgs
   expressiongraph_context
   expressiongraph_context_lua
   expressiongraph_solver_qpoases
@@ -20,6 +21,8 @@ find_package(catkin REQUIRED COMPONENTS
   pluginlib
   realtime_tools
   roscpp
+  rospy
+  std_msgs
 )
 
 find_package(Eigen3 REQUIRED)
@@ -37,8 +40,10 @@ find_package( Bullet REQUIRED)
 # )
 
 catkin_package(
+  INCLUDE_DIRS include
   LIBRARIES etasl_ros_controllers ${BULLET_LIBRARIES}
   CATKIN_DEPENDS
+    etasl_ros_control_msgs
     expressiongraph_context
     expressiongraph_context_lua
     expressiongraph_solver_qpoases

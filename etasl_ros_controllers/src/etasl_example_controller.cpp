@@ -64,6 +64,7 @@ bool EtaslController::init(hardware_interface::RobotHW* robot_hardware, ros::Nod
   etasl_->readTaskSpecificationFile(task_specification_);
   ROS_INFO_STREAM("EtaslController: Loaded task specification from \"" << task_specification_ << "\"");
 
+  // etasl_->activation_command("+global.pickup_lineup_1");
   return true;
 }
 
@@ -105,6 +106,13 @@ void EtaslController::update(const ros::Time& /*time*/, const ros::Duration& per
 
   // Write to output channels
   setOutput();
+
+  // Continously print context to terminal
+  //etasl_->readTaskSpecificationString("print(ctx)");
+}
+
+  // Continously print context to terminal
+  etasl_->readTaskSpecificationString("print(ctx)");
 }
 
 bool EtaslController::configureInput(ros::NodeHandle& node_handle)
@@ -303,6 +311,14 @@ bool EtaslController::configureOutput(ros::NodeHandle& node_handle)
             node_handle, output_names_[i], 4));
         ++n_twist_outputs_;
       }
+      else if (output_types_[i] == "Event")
+      {
+        ROS_INFO_STREAM("EtaslController: Adding output channel \"" << output_names_[i] << "\" of type \"Event\"");
+        event_output_names_.push_back(output_names_[i]);
+        event_realtime_pubs_.push_back(
+            boost::make_shared<realtime_tools::RealtimePublisher<std_msgs::String>>(node_handle, output_names_[i], 4));
+        ++n_event_outputs_;
+      }
       else
       {
         ROS_ERROR_STREAM("EtaslController: Output channel type \"" << output_types_[i] << "\" is not supported");
@@ -383,6 +399,21 @@ void EtaslController::setOutput()
         Twist twist = twist_output_map_["global." + twist_output_names_[i]];
         tf::twistKDLToMsg(twist, twist_realtime_pubs_[i]->msg_);
         twist_realtime_pubs_[i]->unlockAndPublish();
+      }
+    }
+  }
+
+  if (n_event_outputs_ > 0)
+  {
+    for (size_t i = 0; i < n_event_outputs_; i++)
+    {
+      if (etasl_->checkFinishStatus() == 1)
+      {
+        if (event_realtime_pubs_[i]->trylock())
+        {
+          event_realtime_pubs_[i]->msg_.data = "exit";
+          event_realtime_pubs_[i]->unlockAndPublish();
+        }
       }
     }
   }
