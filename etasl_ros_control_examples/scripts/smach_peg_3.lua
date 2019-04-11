@@ -12,22 +12,15 @@ robotiq_frame = r.endeff
 
 block_frame = ctx:createInputChannelFrame("block_frame")
 
-ndx = 1
 speed = ctx:createInputChannelScalar("speed")
 
 -- PEG IN GRIPPER
 pegInGripper_orig = origin(robotiq_frame*translate_z(0.105))
 pegInGripper_dir = -unit_z(rotation(robotiq_frame))
--- HOLE LINES
-holes_frame = {}
-holes_frame[1] = block_frame*frame(vector(0.025,0.0,-0.025))
-for i=2,5 do
-    holes_frame[i] = holes_frame[i-1]*translate_x(0.05)
-end 
 
 -- LINEUP PEG/HOLE CONSTRAINTS
-hole_orig = origin( holes_frame[ndx] )
-hole_dir = unit_y(rotation( holes_frame[ndx] ))
+hole_orig = origin( block_frame )
+hole_dir = unit_y(rotation( block_frame ))
 
 ctx:pushGroup("insertion_lineup_1")
 concentric(pegInGripper_orig, pegInGripper_dir, hole_orig, hole_dir, 

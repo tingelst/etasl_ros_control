@@ -19,17 +19,9 @@ etasl_controller_1:
   input:
     names:
       - "speed"
-      - "peg1_frame"
-      - "peg2_frame"
-      - "peg3_frame"
-      - "peg4_frame"
-      - "peg5_frame"
+      - "peg_frame"
     types:
       - "Scalar"
-      - "Frame"
-      - "Frame"
-      - "Frame"
-      - "Frame"
       - "Frame"
   output:
     names:
@@ -50,17 +42,9 @@ etasl_controller_2:
   input:
     names:
       - "speed"
-      - "peg1_frame"
-      - "peg2_frame"
-      - "peg3_frame"
-      - "peg4_frame"
-      - "peg5_frame"
+      - "peg_frame"
     types:
       - "Scalar"
-      - "Frame"
-      - "Frame"
-      - "Frame"
-      - "Frame"
       - "Frame"
   output:
     names:

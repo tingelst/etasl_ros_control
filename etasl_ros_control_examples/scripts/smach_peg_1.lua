@@ -17,14 +17,11 @@ speed = ctx:createInputChannelScalar("speed")
 pegInGripper_orig = origin(robotiq_frame*translate_z(0.105))
 pegInGripper_dir = -unit_z(rotation(robotiq_frame))
 
-peg_frame = {}
-for i=1,5 do 
-    peg_frame[i] = ctx:createInputChannelFrame("peg"..i.."_frame")
-end
+peg_frame = ctx:createInputChannelFrame("peg_frame")
 
 -- PICKUP CONSTRAINTS
-peg_orig = origin( peg_frame[ndx] )
-peg_dir = unit_z(rotation( peg_frame[ndx] ))
+peg_orig = origin( peg_frame )
+peg_dir = unit_z(rotation( peg_frame ))
 
 ctx:pushGroup("pickup_lineup_1")
 coincident_line_line(pegInGripper_orig,pegInGripper_dir,peg_orig,peg_dir,

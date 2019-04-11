@@ -2,7 +2,10 @@
 <launch>
     <arg name="sim" default="true"/>
     <arg name="speed" default="1.0"/>
-    
+    <param name="take_picture" value="0"/>
+    <param name="picture_taken" value="0"/>
+    <param name="pegNdx" value="0"/>
+
     <include file="$(find kuka_lab_setup)/launch/load_kukalabsetup.launch"/>
 
     <rosparam file="$(find kuka_rsi_hw_interface)/config/controller_joint_names.yaml" command="load"/>
@@ -20,11 +23,11 @@
 
     <node name="rviz" pkg="rviz" type="rviz" args="-d $(find kuka_lab_setup)/config/zero_state_robotiq.rviz" required="true"/>
 
+    <!-- <node name="gripper_controller" pkg="robotiq_2f_gripper_control" type="Robotiq2FGripperTcpNode.py" args="192.168.250.11" required="true"/> -->
+
     <node name="zivid_publisher" pkg="etasl_ros_control_examples" type="zivid_publisher.py" required="true"/>
-    <node name="etasl_publisher_1" pkg="etasl_ros_control_examples" type="etasl_publisher_1.py" required="true"/>
-    <node name="etasl_publisher_2" pkg="etasl_ros_control_examples" type="etasl_publisher_2.py" required="true"/>
-    <node name="etasl_publisher_3" pkg="etasl_ros_control_examples" type="etasl_publisher_3.py" required="true"/>
-    <node name="etasl_publisher_4" pkg="etasl_ros_control_examples" type="etasl_publisher_4.py" required="true"/>   
+    <node name="etasl_peg_publisher" pkg="etasl_ros_control_examples" type="etasl_peg_publisher.py" required="true"/>
+    <node name="etasl_block_publisher" pkg="etasl_ros_control_examples" type="etasl_block_publisher.py" required="true"/>  
     <node name="speed_pub" pkg="etasl_ros_control_examples" type="speed_pub.py" required="true"> 
         <param name="gain_multiplier" value="$(arg speed)"/>
     </node>

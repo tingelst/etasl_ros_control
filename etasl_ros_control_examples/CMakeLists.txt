@@ -15,10 +15,8 @@ catkin_install_python(
   scripts/target_publisher.py 
   scripts/lissajous_publisher.py 
   scripts/zivid_publisher.py
-  scripts/etasl_publisher_1.py
-  scripts/etasl_publisher_2.py
-  scripts/etasl_publisher_3.py
-  scripts/etasl_publisher_4.py
+  scripts/etasl_peg_publisher.py
+  scripts/etasl_block_publisher.py
   scripts/speed_pub.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )

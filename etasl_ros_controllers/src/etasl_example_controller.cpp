@@ -64,6 +64,8 @@ bool EtaslController::init(hardware_interface::RobotHW* robot_hardware, ros::Nod
   etasl_->readTaskSpecificationFile(task_specification_);
   ROS_INFO_STREAM("EtaslController: Loaded task specification from \"" << task_specification_ << "\"");
 
+  EtaslController nodeController;
+  ss = node_handle.advertiseService("activate_cmd", &EtaslController::activation_command_service_clbk, &nodeController);
   // etasl_->activation_command("+global.pickup_lineup_1");
   return true;
 }
@@ -111,8 +113,12 @@ void EtaslController::update(const ros::Time& /*time*/, const ros::Duration& per
   //etasl_->readTaskSpecificationString("print(ctx)");
 }
 
-  // Continously print context to terminal
-  etasl_->readTaskSpecificationString("print(ctx)");
+bool EtaslController::activation_command_service_clbk(etasl_ros_control_msgs::activate_cmd_service::Request& req,
+                                                      etasl_ros_control_msgs::activate_cmd_service::Response& res)
+{
+  etasl_->activation_command(req.command);
+  res.ok = true;
+  return true;
 }
 
 bool EtaslController::configureInput(ros::NodeHandle& node_handle)

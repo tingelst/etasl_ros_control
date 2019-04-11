@@ -10,38 +10,40 @@ from std_msgs.msg import Float64, Header, ColorRGBA
 from visualization_msgs.msg import Marker
 from geometry_msgs.msg import PoseStamped, Pose, Point, Quaternion, Vector3
 
-ndx = 2
-
-etasl_peg1_frame = rospy.Publisher(
-    '/etasl_controller_' + str(ndx) + '/peg1_frame', Pose, queue_size=3)
-etasl_peg2_frame = rospy.Publisher(
-    '/etasl_controller_' + str(ndx) + '/peg2_frame', Pose, queue_size=3)
-etasl_peg3_frame = rospy.Publisher(
-    '/etasl_controller_' + str(ndx) + '/peg3_frame', Pose, queue_size=3)
-etasl_peg4_frame = rospy.Publisher(
-    '/etasl_controller_' + str(ndx) + '/peg4_frame', Pose, queue_size=3)
-etasl_peg5_frame = rospy.Publisher(
-    '/etasl_controller_' + str(ndx) + '/peg5_frame', Pose, queue_size=3)
+peg_etasl_1 = rospy.Publisher(
+    '/etasl_controller_1/peg_frame', Pose, queue_size=3)
+peg_etasl_2 = rospy.Publisher(
+    '/etasl_controller_2/peg_frame', Pose, queue_size=3)
 
 def peg1_frame_clbk(data):
     peg1_frame = data.pose 
-    etasl_peg1_frame.publish(peg1_frame)
+    if (rospy.get_param('pegNdx') == 1):
+        peg_etasl_1.publish(peg1_frame)
+        peg_etasl_2.publish(peg1_frame)
 
 def peg2_frame_clbk(data):
     peg2_frame = data.pose 
-    etasl_peg2_frame.publish(peg2_frame)
+    if (rospy.get_param('pegNdx') == 2):
+        peg_etasl_1.publish(peg2_frame)
+        peg_etasl_2.publish(peg2_frame)
 
 def peg3_frame_clbk(data):
     peg3_frame = data.pose 
-    etasl_peg3_frame.publish(peg3_frame)
+    if (rospy.get_param('pegNdx') == 3):
+        peg_etasl_1.publish(peg3_frame)
+        peg_etasl_2.publish(peg3_frame)
 
 def peg4_frame_clbk(data):
     peg4_frame = data.pose 
-    etasl_peg4_frame.publish(peg4_frame)
+    if (rospy.get_param('pegNdx') == 4):
+        peg_etasl_1.publish(peg4_frame)
+        peg_etasl_2.publish(peg4_frame)
 
 def peg5_frame_clbk(data):
     peg5_frame = data.pose 
-    etasl_peg5_frame.publish(peg5_frame)
+    if (rospy.get_param('pegNdx') == 5):
+        peg_etasl_1.publish(peg5_frame)
+        peg_etasl_2.publish(peg5_frame)
 
 def listener():
     rospy.Subscriber('/rviz/peg1_frame', PoseStamped, peg1_frame_clbk)
@@ -53,7 +55,7 @@ def listener():
 
 if __name__ == "__main__":
 
-    rospy.init_node('etasl_publisher_' + str(ndx))
+    rospy.init_node('etasl_peg_publisher')
 
     rate = rospy.Rate(10)
     try:

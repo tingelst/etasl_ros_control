@@ -30,6 +30,7 @@
 #include <expressiongraph/context_scripting.hpp>
 
 #include <etasl_ros_controllers/etasl_driver.h>
+#include "etasl_ros_control_msgs/activate_cmd_service.h"
 
 using namespace KDL;
 
@@ -57,6 +58,8 @@ private:
   void getInput();
   void setOutput();
   bool configureOutput(ros::NodeHandle& node_handle);
+  bool activation_command_service_clbk(etasl_ros_control_msgs::activate_cmd_service::Request& req,
+                                       etasl_ros_control_msgs::activate_cmd_service::Response& res);
 
   DoubleMap joint_position_map_;
   std::vector<std::string> joint_names_;
@@ -132,5 +135,7 @@ private:
 
   std::string task_specification_;
   boost::shared_ptr<EtaslDriver> etasl_;
+
+  ros::ServiceServer ss;
 };
 }  // namespace etasl_ros_controllers
