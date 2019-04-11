@@ -63,14 +63,6 @@ def activation_command(command):
     sp = rospy.ServiceProxy("/etasl_controller_1/activate_cmd",activate_cmd_service)
     return sp(str(command))
 
-# def pegNdx(ndx):        
-#     pegNdx_pub = rospy.Publisher('/etasl_controller_' + str(ndx) + '/pegNdx', Float64, queue_size=3)
-
-#     rate = rospy.Rate(10)
-#     while not rospy.is_shutdown(): ##### TODO: wait until status says action complete         
-#         pegNdx_pub.publish(ndx)
-#         rate.sleep()
-
 finished = False
 def gripper_status(status):
     global finished
@@ -82,6 +74,7 @@ def gripper_status(status):
 
 def activate_gripper(is_open):
     global finished
+    finished = False
     pub = rospy.Publisher('Robotiq2FGripperRobotOutput', outputMsg.Robotiq2FGripper_robot_output, queue_size=3)
 
     command = outputMsg.Robotiq2FGripper_robot_output()
@@ -232,6 +225,7 @@ class Home(smach.State):
 
 if __name__ == "__main__":
     rospy.init_node("smach_peg")
+    rospy.Subscriber("Robotiq2FGripperRobotInput", inputMsg.Robotiq2FGripper_robot_input, gripper_status)
 
     # Create a SMACH state machine
     sm = smach.StateMachine(outcomes=["fully_complete"])
@@ -258,7 +252,6 @@ if __name__ == "__main__":
     outcome = sm.execute()
 
     try:
-        rospy.Subscriber("Robotiq2FGripperRobotInput", inputMsg.Robotiq2FGripper_robot_input, gripper_status)
         rospy.spin()
     except rospy.ROSInterruptException:
         sis.stop()
