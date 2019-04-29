@@ -109,7 +109,7 @@ then finally run the smach example
 roslaunch etasl_ros_control_examples example_smach.launch
 ```
 
-### Peg-In-Hole example
+## SMACH Peg-In-Hole Example
 To be able to run the peg-in-hole example, do
 ```bash
 cd ./src/
@@ -118,7 +118,7 @@ git clone git@github.com:daglofthus/kuka_lab_setup.git
 Build and source the workspace again:
 ```bash
 cd ..
-catkin_make
+catkin_make --cmake-args -DCMAKE_BUILD_TYPE=Release
 source ./devel/setup.bash
 ```
 then finally run the smach example
