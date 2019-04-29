@@ -397,18 +397,6 @@ void EtaslDriver::getOutput(WrenchMap& wmap)
   }
 }
 
-// void EtaslDriver::getOutput(EventMap& emap)
-// {
-//   for (Context::OutputVarMap::iterator it = ctx_->output_vars.begin(); it != ctx_->output_vars.end(); it++)
-//   {
-//     std::string expr = boost::dynamic_pointer_cast<std::string>(it->second);
-//     if (expr)
-//     {
-//       emap[it->first] = expr->value();
-//     }
-//   }
-// }
-
 int EtaslDriver::initialize(const DoubleMap& initialval, double initialization_time, double sample_time,
                             double convergence_crit, DoubleMap& convergedval)
 {
@@ -499,12 +487,7 @@ int EtaslDriver::updateStep(double dt)
                      << ctx_);
     return -1;
   }
-  // ctx_->checkMonitors();
-  // if (ctx_->getFinishStatus())
-  // {
-  //   return 1;
-  // }
-  // return 0;
+  
   return checkFinishStatus();
 }
 
@@ -520,12 +503,7 @@ int EtaslDriver::solve()
                     << ctx_);
     return -1;
   }
-  // ctx_->checkMonitors();
-  // if (ctx_->getFinishStatus())
-  // {
-  //   return 1;
-  // }
-  // return 0;
+  
   return checkFinishStatus();
 }
 
