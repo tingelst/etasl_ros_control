@@ -26,10 +26,10 @@ hole_orig = origin( block_frame )
 hole_dir = unit_y(rotation( block_frame ))
 
 -- INSERTION CONSTRAINTS
-ctx:pushGroup("insertion_lineup_1")
+ctx:pushGroup("insertion_lineup")
 concentric(pegInGripper_orig, pegInGripper_dir, hole_orig, hole_dir, 
     ctx, 
-    "lineup1", 
+    "lineup", 
     1.0*speed, 
     1.5, 
     2
@@ -53,6 +53,6 @@ Monitor{
 }
 ctx:popGroup()
 
-ctx:activate_cmd("+global.insertion_lineup_1 +global.insertion_closein")
+ctx:activate_cmd("+global.insertion_lineup +global.insertion_closein")
 
 ctx:setOutputExpression("e_event", constant(0.0))

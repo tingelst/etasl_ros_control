@@ -22,17 +22,17 @@ pegInGripper_dir = -unit_z(rotation(robotiq_frame))
 hole_orig = origin( block_frame )
 hole_dir = unit_y(rotation( block_frame ))
 
-ctx:pushGroup("insertion_lineup_1")
+ctx:pushGroup("insertion_lineup")
 concentric(pegInGripper_orig, pegInGripper_dir, hole_orig, hole_dir, 
     ctx, 
-    "lineup1", 
+    "lineup", 
     0.3*speed, 
     1.5, 
     2
 )
 Constraint{
     context     = ctx,
-    name        = "lineup1_dist",
+    name        = "lineup_dist",
     expr        = distance_plane_plane(pegInGripper_orig, pegInGripper_dir, hole_orig, hole_dir),
     target      = 0.1,
     K           = 0.3*speed, 
@@ -48,6 +48,6 @@ Monitor{
 }
 ctx:popGroup()
 
-ctx:activate_cmd("+global.insertion_lineup_1")
+ctx:activate_cmd("+global.insertion_lineup")
 
 ctx:setOutputExpression("e_event", constant(0.0))

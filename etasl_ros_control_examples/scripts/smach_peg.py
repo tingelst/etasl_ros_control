@@ -13,7 +13,7 @@ from controller_manager_msgs.srv import ListControllers
 from controller_manager_msgs.srv import SwitchControllerResponse
 from controller_manager_msgs.srv import SwitchControllerRequest
 from std_msgs.msg import *
-from geometry_msgs.msg import Pose
+from geometry_msgs.msg import Pose, Wrench
 
 import roslib; roslib.load_manifest('robotiq_2f_gripper_control')
 from robotiq_2f_gripper_control.msg import _Robotiq2FGripper_robot_output  as outputMsg
@@ -63,6 +63,16 @@ def activation_command(command):
     sp = rospy.ServiceProxy("/etasl_controller_1/activate_cmd",activate_cmd_service)
     return sp(str(command))
 
+force_z = 0.0
+def wrench_status(data):
+    global force_z
+    force_z = data.force.z
+
+event = ""
+def exit_insertion(data):
+    global event
+    event = data.data
+
 finished = False
 def gripper_status(status):
     global finished
@@ -100,7 +110,7 @@ class Picture(smach.State):
 
     def execute(self, userdata):
         rospy.loginfo("Taking a picture")
-        rospy.sleep(3.0)
+        rospy.sleep(5.0)
         
         picture = rospy.set_param('take_picture', 1)
 
@@ -123,7 +133,6 @@ class PickUpLineUp(smach.State):
         sane_controller_switching("etasl_controller_1") 
         global switching_time
         switching_time.append(rospy.get_time()-i_time)
-        # activation_command("-global.pickup_lineup_1")
 
         #Wait until exit event is published
         rospy.wait_for_message('/etasl_controller_1/e_event', String)  
@@ -154,12 +163,18 @@ class Gripper(smach.State):
     def execute(self, userdata):
         if self.is_open:
             rospy.loginfo("Closing gripper")
-            #activate_gripper(self.is_open)
+            if rospy.get_param("connection"):
+                activate_gripper(self.is_open)
+            else:
+                rospy.sleep(1.0)
             self.is_open = False
             return "gripper_closed"
         else:
             rospy.loginfo("Opening gripper")
-            #activate_gripper(self.is_open)
+            if rospy.get_param("connection"):
+                activate_gripper(self.is_open)
+            else:
+                rospy.sleep(1.0)
             self.is_open = True
             return "gripper_opened"
 
@@ -191,20 +206,39 @@ class InsertionLineUp(smach.State):
 
 class Insertion(smach.State):
     def __init__(self):
-        smach.State.__init__(self, outcomes=["insertion_complete"])
-        self.counter = 1
+        smach.State.__init__(self, outcomes=["insertion_complete","high_force"])
 
     def execute(self, userdata):
+        global force_z
+        global event
+        force_z = 0.0
+        event = ""
         rospy.loginfo("Inserting")
         i_time = rospy.get_time()
         sane_controller_switching("etasl_controller_4") 
         global switching_time
         switching_time.append(rospy.get_time()-i_time)
 
+        while not rospy.is_shutdown():
+            if (event == "exit"):
+                return "insertion_complete"
+            elif (force_z > 50):
+                return "high_force"
+
+class Lissajous(smach.State):
+    def __init__(self):
+        smach.State.__init__(self, outcomes=["lissajous_complete"])
+
+    def execute(self, userdata):
+        rospy.loginfo("Lissjous")
+        i_time = rospy.get_time()
+        sane_controller_switching("etasl_controller_lissajous") 
+        global switching_time
+        switching_time.append(rospy.get_time()-i_time)
+
         #Wait until exit event is published
-        rospy.wait_for_message('/etasl_controller_4/e_event', String)
-        self.counter += 1
-        return "insertion_complete"
+        rospy.wait_for_message('/etasl_controller_lissajous/e_event', String)
+        return "lissajous_complete"
         
 class Home(smach.State):
     def __init__(self):
@@ -219,13 +253,15 @@ class Home(smach.State):
 
         rospy.loginfo(np.average(switching_time))
 
-        rospy.sleep(20.0)
+        rospy.sleep(5.0)
         return "home_reached"        
 
 
 if __name__ == "__main__":
     rospy.init_node("smach_peg")
     rospy.Subscriber("Robotiq2FGripperRobotInput", inputMsg.Robotiq2FGripper_robot_input, gripper_status)
+    rospy.Subscriber('/etasl_controller_lissajous/netft_data', Wrench, wrench_status)
+    rospy.Subscriber('/etasl_controller_4/e_event', String, exit_insertion)
 
     # Create a SMACH state machine
     sm = smach.StateMachine(outcomes=["fully_complete"])
@@ -244,7 +280,10 @@ if __name__ == "__main__":
                                             "retraction_complete": "PickUpLineUp",
                                             "all_pegs_inserted": "Home"})     
         smach.StateMachine.add("Insertion", Insertion(),
-                               transitions={"insertion_complete": "Gripper"})     
+                               transitions={"insertion_complete": "Gripper",
+                                            "high_force": "Lissajous"})   
+        smach.StateMachine.add("Lissajous", Lissajous(),
+                               transitions={"lissajous_complete": "Gripper"})     
         smach.StateMachine.add("Home", Home(),
                                transitions={"home_reached": "fully_complete"})                                                 
     sis = smach_ros.IntrospectionServer('peg_in_hole', sm, '/SM_ROOT')

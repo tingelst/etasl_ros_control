@@ -10,7 +10,6 @@ u:addTransform("endeff","ee","base_link")
 local r = u:getExpressions(ctx)
 robotiq_frame = r.endeff
 
-ndx = 1
 speed = ctx:createInputChannelScalar("speed")
 
 -- PEG IN GRIPPER
@@ -23,17 +22,17 @@ peg_frame = ctx:createInputChannelFrame("peg_frame")
 peg_orig = origin( peg_frame )
 peg_dir = unit_z(rotation( peg_frame ))
 
-ctx:pushGroup("pickup_lineup_1")
+ctx:pushGroup("pickup_lineup")
 coincident_line_line(pegInGripper_orig,pegInGripper_dir,peg_orig,peg_dir,
     ctx,
-    "pickup1",
+    "pickup",
     0.3*speed,
     1.5,
     2
 )
 Constraint{
     context     = ctx,
-    name        = "pickup1_dist",
+    name        = "pickup_dist",
     expr        = distance_plane_plane(pegInGripper_orig, pegInGripper_dir, peg_orig,peg_dir),
     target      = 0.1,
     K           = 0.2*speed, 
@@ -51,4 +50,4 @@ ctx:popGroup()
 
 ctx:setOutputExpression("e_event", constant(0.0))
 
-ctx:activate_cmd("+global.pickup_lineup_1")
+ctx:activate_cmd("+global.pickup_lineup")

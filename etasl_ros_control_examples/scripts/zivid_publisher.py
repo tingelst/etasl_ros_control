@@ -4,7 +4,7 @@
 #  Use of this source code is governed by the LGPL-3.0 license, see LICENSE
 
 import numpy as np
-
+from pyquaternion import Quaternion as quat
 import rospy
 from std_msgs.msg import Bool, Float64, Header, ColorRGBA
 from visualization_msgs.msg import Marker
@@ -23,43 +23,33 @@ def pub_pose():
     rviz_peg4_frame = rospy.Publisher(
         '/rviz/peg4_frame', PoseStamped, queue_size=3)
     rviz_peg5_frame = rospy.Publisher(
-        '/rviz/peg5_frame', PoseStamped, queue_size=3)
-    block = rospy.Publisher(
-        '/rviz/block', Marker, queue_size=100)    
-    peg1 = rospy.Publisher(
-        '/rviz/peg1', Marker, queue_size=100)
-    peg2 = rospy.Publisher(
-        '/rviz/peg2', Marker, queue_size=100)
-    peg3 = rospy.Publisher(
-        '/rviz/peg3', Marker, queue_size=100)
-    peg4 = rospy.Publisher(
-        '/rviz/peg4', Marker, queue_size=100)
-    peg5 = rospy.Publisher(
-        '/rviz/peg5', Marker, queue_size=100)    
+        '/rviz/peg5_frame', PoseStamped, queue_size=3) 
 
+    rand_quat = quat(axis=[0,0,1], angle=np.pi/2)*quat(axis=[1,0,0], angle=np.random.uniform(0, 2*np.pi))
     block_frame=Pose(
-        position=Point(0.0, 0.5-1.0, 0.02), 
-        orientation=Quaternion(0.5, -0.5, -0.5, 0.5)
+        position=Point(0.0, -0.5, 0.02), 
+        orientation=Quaternion(rand_quat.elements[0], rand_quat.elements[1], rand_quat.elements[2], rand_quat.elements[3])
+        #orientation=Quaternion(0.5, -0.5, -0.5, 0.5)
         #orientation=Quaternion(0.654021, 0.652994, 0.270263, 0.269839)
     )
     peg1_frame=Pose(
-        position=Point(np.random.uniform(0.2,0.5), np.random.uniform(-0.6,-0.4), 0.02), 
+        position=Point(np.random.uniform(-0.22,0.22), np.random.uniform(-0.85,-0.25), 0.02),
         orientation=Quaternion(0.0, 0.0, 0.0, 1.0)
     )
     peg2_frame=Pose(
-        position=Point(0.5, 0.4-1.0, 0.02),
+        position=Point(np.random.uniform(-0.22,0.22), np.random.uniform(-0.85,-0.25), 0.02), 
         orientation=Quaternion(0.0, 0.0, 0.0, 1.0)
     )
     peg3_frame=Pose(
-        position=Point(0.35, 0.5-1.0, 0.02), 
+        position=Point(np.random.uniform(-0.22,0.22), np.random.uniform(-0.85,-0.25), 0.02), 
         orientation=Quaternion(0.0, 0.0, 0.0, 1.0)
     )      
     peg4_frame=Pose(
-        position=Point(0.45, 0.57-1.0, 0.02), 
+        position=Point(np.random.uniform(-0.22,0.22), np.random.uniform(-0.85,-0.25), 0.02), 
         orientation=Quaternion(0.0, 0.0, 0.0, 1.0)
     )   
     peg5_frame=Pose(
-        position=Point(0.2, 0.6-1.0, 0.02), 
+        position=Point(np.random.uniform(-0.22,0.22), np.random.uniform(-0.85,-0.25), 0.02), 
         orientation=Quaternion(0.0, 0.0, 0.0, 1.0)
     )
 
@@ -88,79 +78,6 @@ def pub_pose():
         pose=peg5_frame
     )    
 
-    block_marker=Marker(
-        header=Header(frame_id='base_link', stamp=rospy.Time.now()),
-        id=0, 
-        type=Marker.MESH_RESOURCE,
-        action=Marker.ADD,
-        pose=block_frame,
-        scale=Vector3(1.0, 1.0, 1.0),
-        color=ColorRGBA(0.263, 0.275, 0.294, 1.0),
-        lifetime=rospy.Duration(),
-        mesh_resource="package://etasl_ros_control_examples/mesh/block.stl",
-        frame_locked=1
-    )
-    peg1_marker=Marker(
-        header=Header(frame_id='base_link', stamp=rospy.Time.now()),
-        id=0, 
-        type=Marker.MESH_RESOURCE,
-        action=Marker.ADD,
-        pose=peg1_frame,
-        scale=Vector3(1.0, 1.0, 1.0),
-        color=ColorRGBA(0.263, 0.275, 0.294, 1.0),
-        lifetime=rospy.Duration(),
-        mesh_resource="package://etasl_ros_control_examples/mesh/peg.stl",
-        frame_locked=1
-    )
-    peg2_marker=Marker(
-        header=Header(frame_id='base_link', stamp=rospy.Time.now()),
-        id=0, 
-        type=Marker.MESH_RESOURCE,
-        action=Marker.ADD,
-        pose=peg2_frame,
-        scale=Vector3(1.0, 1.0, 1.0),
-        color=ColorRGBA(0.263, 0.275, 0.294, 1.0),
-        lifetime=rospy.Duration(),
-        mesh_resource="package://etasl_ros_control_examples/mesh/peg.stl",
-        frame_locked=1
-    )
-    peg3_marker=Marker(
-        header=Header(frame_id='base_link', stamp=rospy.Time.now()),
-        id=0, 
-        type=Marker.MESH_RESOURCE,
-        action=Marker.ADD,
-        pose=peg3_frame,
-        scale=Vector3(1.0, 1.0, 1.0),
-        color=ColorRGBA(0.263, 0.275, 0.294, 1.0),
-        lifetime=rospy.Duration(),
-        mesh_resource="package://etasl_ros_control_examples/mesh/peg.stl",
-        frame_locked=1
-    )
-    peg4_marker=Marker(
-        header=Header(frame_id='base_link', stamp=rospy.Time.now()),
-        id=0, 
-        type=Marker.MESH_RESOURCE,
-        action=Marker.ADD,
-        pose=peg4_frame,
-        scale=Vector3(1.0, 1.0, 1.0),
-        color=ColorRGBA(0.263, 0.275, 0.294, 1.0),
-        lifetime=rospy.Duration(),
-        mesh_resource="package://etasl_ros_control_examples/mesh/peg.stl",
-        frame_locked=1
-    )
-    peg5_marker=Marker(
-        header=Header(frame_id='base_link', stamp=rospy.Time.now()),
-        id=0, 
-        type=Marker.MESH_RESOURCE,
-        action=Marker.ADD,
-        pose=peg5_frame,
-        scale=Vector3(1.0, 1.0, 1.0),
-        color=ColorRGBA(0.263, 0.275, 0.294, 1.0),
-        lifetime=rospy.Duration(),
-        mesh_resource="package://etasl_ros_control_examples/mesh/peg.stl",
-        frame_locked=1
-    )
-
     rate = rospy.Rate(10)
     i = 0
     try:
@@ -172,13 +89,6 @@ def pub_pose():
             rviz_peg3_frame.publish(peg3_frame_s)
             rviz_peg4_frame.publish(peg4_frame_s)
             rviz_peg5_frame.publish(peg5_frame_s)
-            
-            block.publish(block_marker)
-            peg1.publish(peg1_marker)
-            peg2.publish(peg2_marker)
-            peg3.publish(peg3_marker)
-            peg4.publish(peg4_marker)
-            peg5.publish(peg5_marker)   
 
             if (i > 10):    
                 rospy.set_param('picture_taken', 1)

@@ -21,17 +21,17 @@ peg_frame = ctx:createInputChannelFrame("peg_frame")
 -- PICKUP CONSTRAINTS
 peg_orig = origin( peg_frame )
 peg_dir = unit_z(rotation( peg_frame ))
-ctx:pushGroup("pickup_lineup_1")
+ctx:pushGroup("pickup_lineup")
 coincident_line_line(pegInGripper_orig,pegInGripper_dir,peg_orig,peg_dir,
     ctx,
-    "pickup1",
+    "pickup",
     1.5*speed,
     1.5,
     2
 )
 ctx:popGroup()
 
-ctx:pushGroup("pickup_closein_1")
+ctx:pushGroup("pickup_closein")
 Constraint{
     context     = ctx,
     name        = "RobotiqPeg_originDist",
@@ -51,4 +51,4 @@ ctx:popGroup()
 
 ctx:setOutputExpression("e_event", constant(0.0))
 
-ctx:activate_cmd("+global.pickup_lineup_1 +global.pickup_closein_1")
+ctx:activate_cmd("+global.pickup_lineup +global.pickup_closein")

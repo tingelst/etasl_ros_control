@@ -10,6 +10,7 @@ speed1 = rospy.Publisher('/etasl_controller_1/speed', Float64, queue_size=3)
 speed2 = rospy.Publisher('/etasl_controller_2/speed', Float64, queue_size=3)
 speed3 = rospy.Publisher('/etasl_controller_3/speed', Float64, queue_size=3)
 speed4 = rospy.Publisher('/etasl_controller_4/speed', Float64, queue_size=3)
+speedLiss = rospy.Publisher('/etasl_controller_lissajous/speed', Float64, queue_size=3)
 speedHome = rospy.Publisher('/etasl_controller_home/speed', Float64, queue_size=3)
 
 
@@ -26,6 +27,7 @@ if __name__ == "__main__":
             speed2.publish(speed)
             speed3.publish(speed)
             speed4.publish(speed)
+            speedLiss.publish(speed)
             speedHome.publish(speed)
 
             rate.sleep()
