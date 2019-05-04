@@ -45,6 +45,8 @@ bool EtaslController::init(hardware_interface::RobotHW* robot_hardware, ros::Nod
     }
   }
 
+  configurePubsSrvs(node_handle);
+
   if (!configureInput(node_handle))
   {
     return false;
@@ -64,9 +66,6 @@ bool EtaslController::init(hardware_interface::RobotHW* robot_hardware, ros::Nod
   etasl_->readTaskSpecificationFile(task_specification_);
   ROS_INFO_STREAM("EtaslController: Loaded task specification from \"" << task_specification_ << "\"");
 
-  EtaslController nodeController;
-  ss = node_handle.advertiseService("activate_cmd", &EtaslController::activation_command_service_clbk, &nodeController);
-  // etasl_->activation_command("+global.pickup_lineup_1");
   return true;
 }
 
@@ -106,19 +105,86 @@ void EtaslController::update(const ros::Time& /*time*/, const ros::Duration& per
     position_joint_handles_[i].setCommand(joint_position_map_[joint_names_[i]]);
   }
 
+  // Publish Joint States
+  pubStates();
+
+  // Publish Event
+  pubEvent();
+
   // Write to output channels
   setOutput();
+
+  // If monitor is activated, activate_cmd(moitor argument)
+  newTask();
 
   // Continously print context to terminal
   etasl_->readTaskSpecificationString("print(ctx)");
 }
 
-bool EtaslController::activation_command_service_clbk(etasl_ros_control_msgs::activate_cmd_service::Request& req,
-                                                      etasl_ros_control_msgs::activate_cmd_service::Response& res)
+void EtaslController::newTask()
 {
-  etasl_->activation_command(req.command);
+  if (etasl_->checkFinishStatus())
+  {
+    for (size_t indx = 0; indx < etasl_->ctx_->mon_scalar.size(); ++indx)
+    {
+      if (etasl_->ctx_->mon_scalar[indx].active)
+      {
+        this->stopping(time_);
+        etasl_->activate_cmd(etasl_->ctx_->mon_scalar[indx].argument);
+        this->starting(time_);
+        break;
+      }
+    }
+  }
+}
+
+void EtaslController::configurePubsSrvs(ros::NodeHandle& node_handle)
+{
+  jointstate_realtime_pubs_ = boost::make_shared<realtime_tools::RealtimePublisher<sensor_msgs::JointState>>(
+      node_handle, "joint_states_realtime", 10);
+  event_realtime_pubs_ =
+      boost::make_shared<realtime_tools::RealtimePublisher<std_msgs::String>>(node_handle, "e_event", 3);
+  activate_cmd_service_ = node_handle.advertiseService("activate_cmd", &EtaslController::activate_cmd_srv, this);
+}
+
+bool EtaslController::activate_cmd_srv(etasl_ros_control_msgs::Command::Request& req,
+                                       etasl_ros_control_msgs::Command::Response& res)
+{
+  etasl_->activate_cmd(req.command);
   res.ok = true;
   return true;
+}
+
+void EtaslController::pubStates()
+{
+  etasl_->getJointVel(joint_velocity_map_, 1);
+  joint_pos_.clear();
+  joint_vel_.clear();
+  for (size_t i = 0; i < n_joints_; ++i)
+  {
+    joint_pos_.push_back(joint_position_map_[joint_names_[i]]);
+    joint_vel_.push_back(joint_velocity_map_[joint_names_[i]]);
+  }
+  if (jointstate_realtime_pubs_->trylock())
+  {
+    jointstate_realtime_pubs_->msg_.header.stamp = ros::Time::now();
+    jointstate_realtime_pubs_->msg_.name = joint_names_;
+    jointstate_realtime_pubs_->msg_.position = joint_pos_;
+    jointstate_realtime_pubs_->msg_.velocity = joint_vel_;
+    jointstate_realtime_pubs_->unlockAndPublish();
+  }
+}
+
+void EtaslController::pubEvent()
+{
+  if (etasl_->checkFinishStatus() == 1)
+  {
+    if (event_realtime_pubs_->trylock())
+    {
+      event_realtime_pubs_->msg_.data = "exit";
+      event_realtime_pubs_->unlockAndPublish();
+    }
+  }
 }
 
 bool EtaslController::configureInput(ros::NodeHandle& node_handle)
@@ -347,14 +413,6 @@ bool EtaslController::configureOutput(ros::NodeHandle& node_handle)
             node_handle, output_names_[i], 4));
         ++n_wrench_outputs_;
       }
-      else if (output_types_[i] == "Event")
-      {
-        ROS_INFO_STREAM("EtaslController: Adding output channel \"" << output_names_[i] << "\" of type \"Event\"");
-        event_output_names_.push_back(output_names_[i]);
-        event_realtime_pubs_.push_back(
-            boost::make_shared<realtime_tools::RealtimePublisher<std_msgs::String>>(node_handle, output_names_[i], 4));
-        ++n_event_outputs_;
-      }
       else
       {
         ROS_ERROR_STREAM("EtaslController: Output channel type \"" << output_types_[i] << "\" is not supported");
@@ -449,21 +507,6 @@ void EtaslController::setOutput()
         Wrench wrench = wrench_output_map_["global." + wrench_output_names_[i]];
         tf::wrenchKDLToMsg(wrench, wrench_realtime_pubs_[i]->msg_);
         wrench_realtime_pubs_[i]->unlockAndPublish();
-      }
-    }
-  }
-
-  if (n_event_outputs_ > 0)
-  {
-    for (size_t i = 0; i < n_event_outputs_; i++)
-    {
-      if (etasl_->checkFinishStatus() == 1)
-      {
-        if (event_realtime_pubs_[i]->trylock())
-        {
-          event_realtime_pubs_[i]->msg_.data = "exit";
-          event_realtime_pubs_[i]->unlockAndPublish();
-        }
       }
     }
   }

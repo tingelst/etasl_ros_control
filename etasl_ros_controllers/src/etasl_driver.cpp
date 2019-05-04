@@ -67,7 +67,6 @@ EtaslDriver::EtaslDriver(int nWSR, double cputime, double regularization_factor)
   solver_ = boost::make_shared<qpOASESSolver>(nWSR, cputime, regularization_factor);
 
   obs_ = create_default_observer(ctx_, "exit");
-  //obs_ = create_grouping_observer(ctx_);
   ctx_->addDefaultObserver(obs_);
 
   etaslread = false;
@@ -87,9 +86,9 @@ void EtaslDriver::readTaskSpecificationString(const std::string& taskspec)
   etaslread = true;
 }
 
-void EtaslDriver::activation_command(const std::string& command)
+void EtaslDriver::activate_cmd(const std::string& command)
 {
-  etaslread = ctx_->activate_cmd(command);
+  ctx_->activate_cmd(command);
 }
 
 int EtaslDriver::checkFinishStatus()

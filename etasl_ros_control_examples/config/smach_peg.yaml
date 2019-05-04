@@ -23,11 +23,6 @@ etasl_controller_1:
     types:
       - "Scalar"
       - "Frame"
-  output:
-    names:
-      - "e_event"
-    types:
-      - "Event"
   task_specification: "$(find etasl_ros_control_examples)/scripts/smach_peg_1.lua"
 
 etasl_controller_2:
@@ -46,11 +41,6 @@ etasl_controller_2:
     types:
       - "Scalar"
       - "Frame"
-  output:
-    names:
-      - "e_event"
-    types:
-      - "Event"
   task_specification: "$(find etasl_ros_control_examples)/scripts/smach_peg_2.lua"
 
 etasl_controller_3:
@@ -69,11 +59,6 @@ etasl_controller_3:
     types:
       - "Scalar"
       - "Frame"
-  output:
-    names:
-      - "e_event"
-    types:
-      - "Event"
   task_specification: "$(find etasl_ros_control_examples)/scripts/smach_peg_3.lua"
 
 etasl_controller_4:
@@ -92,11 +77,6 @@ etasl_controller_4:
     types:
       - "Scalar"
       - "Frame"
-  output:
-    names:
-      - "e_event"
-    types:
-      - "Event"
   task_specification: "$(find etasl_ros_control_examples)/scripts/smach_peg_4.lua"
 
 etasl_controller_lissajous:
@@ -119,11 +99,6 @@ etasl_controller_lissajous:
       - "Vector"
       - "Frame"
       - "Wrench"
-  output:
-    names:
-      - "e_event"
-    types:
-      - "Event"
   task_specification: "$(find etasl_ros_control_examples)/scripts/smach_peg_lissajous.lua"
 
 etasl_controller_home:

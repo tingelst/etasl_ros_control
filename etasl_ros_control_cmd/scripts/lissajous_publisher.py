@@ -14,7 +14,7 @@ def target_publisher():
     rospy.init_node('target_publisher')    
 
     pub_tgt = rospy.Publisher(
-        '/etasl_controller_lissajous/tgt', Vector3, queue_size=3)
+        '/etasl_controller_cmd/tgt', Vector3, queue_size=3)
 
     rate = rospy.Rate(30)
     try:

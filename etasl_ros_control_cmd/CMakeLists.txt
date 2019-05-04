@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(etasl_ros_control_examples)
+project(etasl_ros_control_cmd)
 
 find_package(catkin)
 
@@ -12,12 +12,12 @@ install(DIRECTORY launch config scripts
 
 catkin_install_python(
   PROGRAMS 
-  scripts/target_publisher.py 
-  scripts/lissajous_publisher.py 
-  scripts/zivid_publisher.py
   scripts/etasl_pose_publisher.py
-  scripts/speed_pub.py
   scripts/force_publisher.py
   scripts/jointstate_grapher.py
+  scripts/lissajous_publisher.py 
+  scripts/smach_task.py
+  scripts/speed_pub.py
+  scripts/zivid_publisher.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )

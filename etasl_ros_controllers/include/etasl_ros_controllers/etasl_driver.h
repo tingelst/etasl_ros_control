@@ -45,7 +45,7 @@ class EtaslDriver
   boost::shared_ptr<qpOASESSolver> solver_;
   bool etaslread;
   bool initialized_;
-  boost::shared_ptr<Context> ctx_;
+  // boost::shared_ptr<Context> ctx_;
   boost::shared_ptr<LuaContext> lua;
   boost::shared_ptr<Observer> obs_;
   boost::shared_ptr<OutputGenerator> out_;
@@ -76,6 +76,8 @@ class EtaslDriver
                                   double convergence_crit);
 
 public:
+
+  boost::shared_ptr<Context> ctx_;
   /**
    * eTaSLCppDriver constructor
    *
@@ -191,7 +193,7 @@ public:
    * reads commands for activation/deactivation of constraints 
    * and configures the controller accordingly.
    */
-  void activation_command(const std::string& command);
+  void activate_cmd(const std::string& command);
 
   int checkFinishStatus();
 

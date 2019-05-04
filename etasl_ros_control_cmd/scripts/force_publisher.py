@@ -11,7 +11,7 @@ from std_msgs.msg import Float64
 def wrench_publisher():
     rospy.init_node('wrench_publisher') 
 
-    wrench_pub = rospy.Publisher('/etasl_controller_lissajous/netft_data', Wrench, queue_size=100)
+    wrench_pub = rospy.Publisher('/etasl_controller_cmd/netft_data', Wrench, queue_size=100)
     rate = rospy.Rate(250)
     try:
         while not rospy.is_shutdown():

@@ -10,17 +10,20 @@ import rospy
 from std_msgs.msg import Float64, Header, ColorRGBA
 from visualization_msgs.msg import Marker
 from geometry_msgs.msg import PoseStamped, Pose, Point, Quaternion, Vector3
+from controller_manager_msgs.srv import ListControllers
 
 peg_etasl_1 = rospy.Publisher(
-    '/etasl_controller_1/peg_frame', Pose, queue_size=3)
+    '/etasl_controller_cmd/peg1_frame', Pose, queue_size=3)
 peg_etasl_2 = rospy.Publisher(
-    '/etasl_controller_2/peg_frame', Pose, queue_size=3)
-block_etasl_3 = rospy.Publisher(
-    '/etasl_controller_3/block_frame', Pose, queue_size=3)
-block_etasl_4 = rospy.Publisher(
-    '/etasl_controller_4/block_frame', Pose, queue_size=3)
-block_etasl_lissajous = rospy.Publisher(
-    '/etasl_controller_lissajous/block_frame', Pose, queue_size=3)
+    '/etasl_controller_cmd/peg2_frame', Pose, queue_size=3) 
+peg_etasl_3 = rospy.Publisher(
+    '/etasl_controller_cmd/peg3_frame', Pose, queue_size=3)
+peg_etasl_4 = rospy.Publisher(
+    '/etasl_controller_cmd/peg4_frame', Pose, queue_size=3)
+peg_etasl_5 = rospy.Publisher(
+    '/etasl_controller_cmd/peg5_frame', Pose, queue_size=3)   
+block_etasl = rospy.Publisher(
+    '/etasl_controller_cmd/block_frame', Pose, queue_size=3)
 rviz_block = rospy.Publisher(
     '/rviz/block', Marker, queue_size=100)    
 rviz_peg1 = rospy.Publisher(
@@ -32,7 +35,7 @@ rviz_peg3 = rospy.Publisher(
 rviz_peg4 = rospy.Publisher(
     '/rviz/peg4', Marker, queue_size=100)
 rviz_peg5 = rospy.Publisher(
-    '/rviz/peg5', Marker, queue_size=100) 
+    '/rviz/peg5', Marker, queue_size=100)
 
 def peg1_frame_clbk(data):
     peg1_frame = data.pose 
@@ -51,9 +54,7 @@ def peg1_frame_clbk(data):
     )
     rviz_peg1.publish(peg1_marker)
 
-    if (rospy.get_param('pegNdx') == 1):
-        peg_etasl_1.publish(peg1_frame)
-        peg_etasl_2.publish(peg1_frame)
+    peg_etasl_1.publish(peg1_frame)
 
 def peg2_frame_clbk(data):
     peg2_frame = data.pose 
@@ -72,9 +73,7 @@ def peg2_frame_clbk(data):
     )    
     rviz_peg2.publish(peg2_marker)
 
-    if (rospy.get_param('pegNdx') == 2):
-        peg_etasl_1.publish(peg2_frame)
-        peg_etasl_2.publish(peg2_frame)
+    peg_etasl_2.publish(peg2_frame)
 
 def peg3_frame_clbk(data):
     peg3_frame = data.pose 
@@ -93,9 +92,7 @@ def peg3_frame_clbk(data):
     )    
     rviz_peg3.publish(peg3_marker)
 
-    if (rospy.get_param('pegNdx') == 3):
-        peg_etasl_1.publish(peg3_frame)
-        peg_etasl_2.publish(peg3_frame)
+    peg_etasl_3.publish(peg3_frame)
 
 def peg4_frame_clbk(data):
     peg4_frame = data.pose 
@@ -114,9 +111,7 @@ def peg4_frame_clbk(data):
     )    
     rviz_peg4.publish(peg4_marker)
 
-    if (rospy.get_param('pegNdx') == 4):
-        peg_etasl_1.publish(peg4_frame)
-        peg_etasl_2.publish(peg4_frame)
+    peg_etasl_4.publish(peg4_frame)
 
 def peg5_frame_clbk(data):
     peg5_frame = data.pose 
@@ -135,21 +130,10 @@ def peg5_frame_clbk(data):
     )    
     rviz_peg5.publish(peg5_marker)
 
-    if (rospy.get_param('pegNdx') == 5):
-        peg_etasl_1.publish(peg5_frame)
-        peg_etasl_2.publish(peg5_frame)
+    peg_etasl_5.publish(peg5_frame)
 
 def block_frame_clbk(data):
-    block_pos = data.pose.position
-    block_ori = data.pose.orientation
-
-    rot = R.from_quat([block_ori.x, block_ori.y, block_ori.z, block_ori.w])
-    trans = np.dot(rot.as_dcm(),([[0.025 + 0.05*(rospy.get_param('pegNdx')-1)], [0], [-0.025]]))
-
-    block_frame=Pose(
-        position=Point(block_pos.x + trans[0,0], block_pos.y + trans[1,0], block_pos.z + trans[2,0]),
-        orientation=Quaternion(block_ori.x, block_ori.y, block_ori.z, block_ori.w)
-    )
+    block_frame = data.pose
 
     block_marker=Marker(
         header=Header(frame_id='base_link', stamp=rospy.Time.now()),
@@ -164,14 +148,12 @@ def block_frame_clbk(data):
         frame_locked=1
     )
 
-    block_etasl_3.publish(block_frame)
-    block_etasl_4.publish(block_frame)
-    block_etasl_lissajous.publish(block_frame)
+    block_etasl.publish(block_frame)
     rviz_block.publish(block_marker)
 
 
 def listener():
-    rospy.init_node('etasl_pose_publisher')
+    rospy.init_node('etasl_pose_publisher') 
 
     rospy.Subscriber('/rviz/peg1_frame', PoseStamped, peg1_frame_clbk)
     rospy.Subscriber('/rviz/peg2_frame', PoseStamped, peg2_frame_clbk)

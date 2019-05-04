@@ -6,18 +6,17 @@
 import rospy
 from std_msgs.msg import Float64
 
-speed1 = rospy.Publisher('/etasl_controller_1/speed', Float64, queue_size=3)
-speed2 = rospy.Publisher('/etasl_controller_2/speed', Float64, queue_size=3)
-speed3 = rospy.Publisher('/etasl_controller_3/speed', Float64, queue_size=3)
-speed4 = rospy.Publisher('/etasl_controller_4/speed', Float64, queue_size=3)
-speedLiss = rospy.Publisher('/etasl_controller_lissajous/speed', Float64, queue_size=3)
-speedHome = rospy.Publisher('/etasl_controller_home/speed', Float64, queue_size=3)
-
-
-if __name__ == "__main__":
+def speed_publisher():
 
     rospy.init_node('speed_publisher')
     speed = rospy.get_param('~gain_multiplier')
+
+    speed1 = rospy.Publisher('/etasl_controller_1/speed', Float64, queue_size=3)
+    speed2 = rospy.Publisher('/etasl_controller_2/speed', Float64, queue_size=3)
+    speed3 = rospy.Publisher('/etasl_controller_3/speed', Float64, queue_size=3)
+    speed4 = rospy.Publisher('/etasl_controller_4/speed', Float64, queue_size=3)
+    speedLiss = rospy.Publisher('/etasl_controller_lissajous/speed', Float64, queue_size=3)
+    speedHome = rospy.Publisher('/etasl_controller_home/speed', Float64, queue_size=3)
 
     rate = rospy.Rate(10)
     try:
@@ -33,3 +32,6 @@ if __name__ == "__main__":
             rate.sleep()
     except rospy.ROSInterruptException:
         pass    
+
+if __name__ == "__main__":
+    speed_publisher()

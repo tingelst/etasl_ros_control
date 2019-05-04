@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 2.8.3)
 project(etasl_ros_control_msgs)
 
 find_package(catkin REQUIRED COMPONENTS
+  roscpp
+  rospy
   std_msgs
   message_generation
 )
@@ -9,7 +11,8 @@ find_package(catkin REQUIRED COMPONENTS
 add_service_files(
   DIRECTORY srv
   FILES
-  activate_cmd_service.srv
+  Command.srv
+  Picture.srv
 )
 
 generate_messages(
@@ -18,7 +21,9 @@ generate_messages(
 )
 
 catkin_package(
-  CATKIN_DEPENDS message_runtime
+  CATKIN_DEPENDS 
+  message_runtime
+  std_msgs
 )
 
 #add_dependencies(activate_cmd_server

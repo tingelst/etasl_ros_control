@@ -49,5 +49,3 @@ Monitor{
 ctx:popGroup()
 
 ctx:activate_cmd("+global.insertion_lineup")
-
-ctx:setOutputExpression("e_event", constant(0.0))

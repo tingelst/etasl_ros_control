@@ -22,6 +22,7 @@
 #include <kdl_conversions/kdl_msg.h>
 #include <std_msgs/Float64.h>
 #include <std_msgs/String.h>
+#include <sensor_msgs/JointState.h>
 #include <realtime_tools/realtime_publisher.h>
 #include <realtime_tools/realtime_buffer.h>
 
@@ -30,7 +31,7 @@
 #include <expressiongraph/context_scripting.hpp>
 
 #include <etasl_ros_controllers/etasl_driver.h>
-#include "etasl_ros_control_msgs/activate_cmd_service.h"
+#include <etasl_ros_control_msgs/Command.h>
 
 using namespace KDL;
 
@@ -55,18 +56,33 @@ private:
   std::vector<hardware_interface::JointHandle> position_joint_handles_;
 
   void solve();
+  void configurePubsSrvs(ros::NodeHandle& node_handle);
+  void pubStates();
+  void pubEvent();
   bool configureInput(ros::NodeHandle& node_handle);
   void getInput();
   void setOutput();
   bool configureOutput(ros::NodeHandle& node_handle);
-  bool activation_command_service_clbk(etasl_ros_control_msgs::activate_cmd_service::Request& req,
-                                       etasl_ros_control_msgs::activate_cmd_service::Response& res);
+  void newTask();
+  bool activate_cmd_srv(etasl_ros_control_msgs::Command::Request& req, etasl_ros_control_msgs::Command::Response& res);
 
   DoubleMap joint_position_map_;
   std::vector<std::string> joint_names_;
   size_t n_joints_{};
 
   DoubleMap joint_velocity_map_;
+
+  // Realtime joint state publisher
+  std::vector<double> joint_pos_;
+  std::vector<double> joint_vel_;
+  boost::shared_ptr<realtime_tools::RealtimePublisher<sensor_msgs::JointState>> jointstate_realtime_pubs_;
+
+  // Realtime event publisher
+  boost::shared_ptr<realtime_tools::RealtimePublisher<std_msgs::String>> event_realtime_pubs_;
+
+  // Service node for activate_cmd()
+  const ros::Time& time_ = ros::Time::now();
+  ros::ServiceServer activate_cmd_service_;
 
   // Inputs
   std::vector<std::string> input_names_;
@@ -140,13 +156,7 @@ private:
   size_t n_wrench_outputs_{};
   std::vector<boost::shared_ptr<realtime_tools::RealtimePublisher<geometry_msgs::Wrench>>> wrench_realtime_pubs_;
 
-  std::vector<std::string> event_output_names_;
-  size_t n_event_outputs_{};
-  std::vector<boost::shared_ptr<realtime_tools::RealtimePublisher<std_msgs::String>>> event_realtime_pubs_;
-
   std::string task_specification_;
   boost::shared_ptr<EtaslDriver> etasl_;
-
-  ros::ServiceServer ss;
 };
 }  // namespace etasl_ros_controllers

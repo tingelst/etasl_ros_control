@@ -49,6 +49,4 @@ Monitor{
 }
 ctx:popGroup()
 
-ctx:setOutputExpression("e_event", constant(0.0))
-
 ctx:activate_cmd("+global.pickup_lineup +global.pickup_closein")

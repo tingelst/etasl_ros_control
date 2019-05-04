@@ -1,22 +1,17 @@
-<package>
-  <name>etasl_ros_control_msgs</name>  
+<?xml version="1.0"?>
+<package format="2">
+  <name>etasl_ros_control_cmd</name>
   <version>0.0.1</version>
-  <description>etasl_ros_control_msgs</description>
+  <description>etasl_example_control_examples provides example code for controlling robots with eTaSl and ros_control</description>
   <maintainer email="lars.tingelstad@ntnu.no">Lars Tingelstad</maintainer>
-  <license>LGPL-3.0</license>
-
+  <license>GNU LGPL-3.0</license>
   <url type="repository">https://github.com/tingelst/etasl_ros_control</url>
   <url type="bugtracker">https://github.com/tingelst/etasl_ros_control/issues</url>
   <author>Lars Tingelstad</author>
 
   <buildtool_depend>catkin</buildtool_depend>
 
-  <build_depend>message_generation</build_depend>
-  <build_depend>std_msgs</build_depend>
+  <depend>kuka_experimental</depend>
 
-  <run_depend>message_runtime</run_depend>
-  <run_depend>std_msgs</run_depend>
-
+  <exec_depend>rospy</exec_depend>
 </package>
-
-

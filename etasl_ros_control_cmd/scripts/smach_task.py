@@ -13,8 +13,8 @@ import os
 from zivid_publisher import pub_pose
 from etasl_ros_control_msgs.srv import *
 
-from controller_manager_msgs.srv import SwitchController
 from controller_manager_msgs.srv import ListControllers
+from controller_manager_msgs.srv import SwitchController
 from controller_manager_msgs.srv import SwitchControllerResponse
 from controller_manager_msgs.srv import SwitchControllerRequest
 from std_msgs.msg import *
@@ -26,58 +26,33 @@ from robotiq_2f_gripper_control.msg import _Robotiq2FGripper_robot_input  as inp
 
 switching_time = []
 
-def sane_controller_switching(desired_controller, timeout=None):
-    """Function to switch hw controller when there can be resource
-    conflicts. Potentially slow, but if we don't know what we're
-    switching from, it might be necessary.
-    """
-    rospy.wait_for_service("/controller_manager/list_controllers",
-                           timeout=timeout)
-    rospy.wait_for_service("/controller_manager/switch_controller",
-                           timeout=timeout)
-    ls = rospy.ServiceProxy("/controller_manager/list_controllers",
-                            ListControllers)
-    sw = rospy.ServiceProxy("/controller_manager/switch_controller",
-                            SwitchController)
-    # Find controllers that control the same resources
-    resources = ["joint_a1", "joint_a2", "joint_a3",
-                 "joint_a4", "joint_a5", "joint_a6"]
-    hw_controllers = ls()
-    stop_cntrllrs = []
-    for cntrllr in hw_controllers.controller:
-        if cntrllr.state == "running":
-            if cntrllr.name == desired_controller:
-                return SwitchControllerResponse(ok=True)
-            for resource in resources:
-                try:
-                    for claimed_obj in cntrllr.claimed_resources:
-                        if resource in claimed_obj.resources:
-                            if cntrllr.name not in stop_cntrllrs:
-                                stop_cntrllrs.append(cntrllr.name)
-                except AttributeError:
-                    # Happens with ROS < Kinetic Kame
-                    if resource in cntrllr.resources:
-                        if cntrllr.name != desired_controller:
-                            if cntrllr.name not in stop_cntrllrs:
-                                stop_cntrllrs.append(cntrllr.name)
-    return sw([str(desired_controller)], stop_cntrllrs,
-              SwitchControllerRequest.STRICT)
+def activate_cmd_switch(command):
+    global switching_time
+    i_time = rospy.get_time()
+    stop()
+    rospy.wait_for_service('/etasl_controller_cmd/activate_cmd')
+    activate_cmd = rospy.ServiceProxy('/etasl_controller_cmd/activate_cmd', Command)
+    resp = activate_cmd(command)
+    start()
+    
+    switching_time.append(rospy.get_time()-i_time)
+    return resp.ok
+
+def start():
+    rospy.wait_for_service("/controller_manager/switch_controller")
+    start = rospy.ServiceProxy("/controller_manager/switch_controller",SwitchController)
+    start(["etasl_controller_cmd"],[],SwitchControllerRequest.STRICT)
+
+def stop():
+    rospy.wait_for_service("/controller_manager/switch_controller")
+    start = rospy.ServiceProxy("/controller_manager/switch_controller",SwitchController)
+    start([],["etasl_controller_cmd"],SwitchControllerRequest.STRICT)
 
 def plot_switch_time(switching_time):
     plt.figure()
     plt.plot(switching_time,'*k')
     plt.plot([0,30],[np.average(switching_time),np.average(switching_time)],'r')
     plt.show()
-
-force_z = 0.0
-def wrench_status(data):
-    global force_z
-    force_z = data.force.z
-
-event = ""
-def exit_insertion(data):
-    global event
-    event = data.data
 
 finished = False
 def gripper_status(status):
@@ -133,14 +108,10 @@ class PickUpLineUp(smach.State):
         self.counter = 1
 
     def execute(self, userdata):
-        rospy.set_param('pegNdx',self.counter)
-        i_time = rospy.get_time()
-        sane_controller_switching("etasl_controller_1") 
-        global switching_time
-        switching_time.append(rospy.get_time()-i_time)
-               
+        if (self.counter == 1):
+            start()
         #Wait until exit event is published
-        rospy.wait_for_message('/etasl_controller_1/e_event', String)  
+        rospy.wait_for_message('/etasl_controller_cmd/e_event', String)  
         self.counter += 1
         return "pickUpLineUp_complete"
 
@@ -148,31 +119,32 @@ class PickUpLineUp(smach.State):
 class PickUp(smach.State):
     def __init__(self):
         smach.State.__init__(self, outcomes=["pickUp_complete"])
+        self.counter = 1
 
     def execute(self, userdata):
-        i_time = rospy.get_time()
-        sane_controller_switching("etasl_controller_2") 
-        global switching_time
-        switching_time.append(rospy.get_time()-i_time)
-
         #Wait until exit event is published
-        rospy.wait_for_message('/etasl_controller_2/e_event', String)
+        rospy.wait_for_message('/etasl_controller_cmd/e_event', String)
+        self.counter += 1
         return "pickUp_complete"
 
 class Gripper(smach.State):
     def __init__(self):
         smach.State.__init__(self, outcomes=["gripper_closed","gripper_opened"])
+        self.counter = 1
         self.is_open = True
 
     def execute(self, userdata):
         if rospy.get_param("connection"):
             activate_gripper(self.is_open)
         else:
-            rospy.sleep(1.0)
+            rospy.sleep(2.0)
         if self.is_open:
+            activate_cmd_switch("+global.insertion_lineup_"+str(self.counter))
             self.is_open = False
             return "gripper_closed"
         else:
+            activate_cmd_switch("+global.retract_"+str(self.counter))
+            self.counter += 1
             self.is_open = True
             return "gripper_opened"
 
@@ -183,69 +155,37 @@ class InsertionLineUp(smach.State):
         self.insert = True
 
     def execute(self, userdata):
-        i_time = rospy.get_time()
-        sane_controller_switching("etasl_controller_3") 
-        global switching_time
-        switching_time.append(rospy.get_time()-i_time)
-
         #Wait until exit event is published
-        rospy.wait_for_message('/etasl_controller_3/e_event', String)
+        rospy.wait_for_message('/etasl_controller_cmd/e_event', String)
         if self.insert:
-            self.counter += 1
             self.insert = False
             return "insertionLineUp_complete"
-        elif self.counter == 6:
+        elif self.counter == 5:
+            activate_cmd_switch("+global.home")
             return "all_pegs_inserted"
         else:
-            rospy.sleep(2.0)
+            self.counter += 1
             self.insert = True
             return "retraction_complete"
 
 class Insertion(smach.State):
     def __init__(self):
-        smach.State.__init__(self, outcomes=["insertion_complete","high_force"])
+        smach.State.__init__(self, outcomes=["insertion_complete"])
+        self.counter = 1
 
     def execute(self, userdata):
-        global force_z
-        global event
-        force_z = 0.0
-        event = ""
-
-        i_time = rospy.get_time()
-        sane_controller_switching("etasl_controller_4") 
-        global switching_time
-        switching_time.append(rospy.get_time()-i_time)
-
-        while not rospy.is_shutdown():
-            if (event == "exit"):
-                return "insertion_complete"
-            elif (force_z > 50):
-                return "high_force"
-
-class Lissajous(smach.State):
-    def __init__(self):
-        smach.State.__init__(self, outcomes=["lissajous_complete"])
-
-    def execute(self, userdata):
-        i_time = rospy.get_time()
-        sane_controller_switching("etasl_controller_lissajous") 
-        global switching_time
-        switching_time.append(rospy.get_time()-i_time)
-
         #Wait until exit event is published
-        rospy.wait_for_message('/etasl_controller_lissajous/e_event', String)
-        return "lissajous_complete"
+        rospy.wait_for_message('/etasl_controller_cmd/e_event', String)
+        self.counter += 1
+        return "insertion_complete"
+
         
 class Home(smach.State):
     def __init__(self):
         smach.State.__init__(self, outcomes=["home_reached"])
 
     def execute(self, userdata):
-        i_time = rospy.get_time()
-        sane_controller_switching("etasl_controller_home") 
         global switching_time
-        switching_time.append(rospy.get_time()-i_time)
-
         plot_switch_time(switching_time)
 
         rospy.sleep(5.0)
@@ -255,8 +195,6 @@ class Home(smach.State):
 if __name__ == "__main__":
     rospy.init_node("smach_peg")
     rospy.Subscriber("Robotiq2FGripperRobotInput", inputMsg.Robotiq2FGripper_robot_input, gripper_status)
-    rospy.Subscriber('/etasl_controller_lissajous/netft_data', Wrench, wrench_status)
-    rospy.Subscriber('/etasl_controller_4/e_event', String, exit_insertion)
 
     # Create a SMACH state machine
     sm = smach.StateMachine(outcomes=["fully_complete"])
@@ -275,10 +213,7 @@ if __name__ == "__main__":
                                             "retraction_complete": "PickUpLineUp",
                                             "all_pegs_inserted": "Home"})     
         smach.StateMachine.add("Insertion", Insertion(),
-                               transitions={"insertion_complete": "Gripper",
-                                            "high_force": "Lissajous"})   
-        smach.StateMachine.add("Lissajous", Lissajous(),
-                               transitions={"lissajous_complete": "Gripper"})     
+                               transitions={"insertion_complete": "Gripper"})    
         smach.StateMachine.add("Home", Home(),
                                transitions={"home_reached": "fully_complete"})                                                 
     sis = smach_ros.IntrospectionServer('peg_in_hole', sm, '/SM_ROOT')

@@ -5,7 +5,6 @@
     <arg name="speed" default="1.0"/>
     <arg name="plot" default="false"/>
     <param name="connection" value="$(arg connected)"/>
-    <param name="pegNdx" value="0"/>
 
     <include file="$(find kuka_lab_setup)/launch/load_kukalabsetup.launch"/>
 
@@ -14,9 +13,9 @@
     <rosparam file="$(find kuka_rsi_hw_interface)/test/test_params.yaml" command="load" unless="$(arg sim)"/>
     <node name="kuka_hardware_interface" pkg="kuka_rsi_hw_interface" type="kuka_hardware_interface_node" respawn="false" output="screen" required="true"/>
 
-    <rosparam file="$(find etasl_ros_control_examples)/config/smach_peg.yaml" command="load" subst_value="true"/>
+    <rosparam file="$(find etasl_ros_control_cmd)/config/smach_peg.yaml" command="load" subst_value="true"/>
     <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false" output="screen" args="joint_state_controller"/>
-    <node name="controller_spawner_etasl" pkg="controller_manager" type="spawner" respawn="false" output="screen" args="--stopped etasl_controller_1 etasl_controller_2 etasl_controller_3 etasl_controller_4 etasl_controller_lissajous etasl_controller_home"/>
+    <node name="controller_spawner_etasl" pkg="controller_manager" type="spawner" respawn="false" output="screen" args="--stopped etasl_controller_cmd"/>
 
     <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"/>
 
@@ -25,18 +24,18 @@
     <node name="rviz" pkg="rviz" type="rviz" args="-d $(find kuka_lab_setup)/config/zero_state_robotiq.rviz" required="true"/>
 
     <node name="gripper_controller" pkg="robotiq_2f_gripper_control" type="Robotiq2FGripperTcpNode.py" args="192.168.250.11" required="true" if="$(arg connected)"/>
-    <node name="netft_publisher" pkg="netft_control" type="netft_node" args="--rate 250 --wrench --address 192.168.1.13 --topic_name etasl_controller_lissajous/" required="true"  if="$(arg connected)"/>
-    <node name="wrench_publisher" pkg="etasl_ros_control_examples" type="force_publisher.py" required="true" unless="$(arg connected)"/>
+    <node name="netft_publisher" pkg="netft_control" type="netft_node" args="--rate 250 --wrench --address 192.168.1.13 --topic_name etasl_controller_cmd/" required="true"  if="$(arg connected)"/>
+    <node name="wrench_publisher" pkg="etasl_ros_control_cmd" type="force_publisher.py" required="true" unless="$(arg connected)"/>
 
-    <node name="jointstate_grapher" pkg="etasl_ros_control_examples" type="jointstate_grapher.py" required="true" if="$(arg plot)"/>
-    <node name="lissajous_publisher" pkg="etasl_ros_control_examples" type="lissajous_publisher.py" required="true"/>
-    <node name="zivid_publisher" pkg="etasl_ros_control_examples" type="zivid_publisher.py" required="true"/>
-    <node name="etasl_pose_publisher" pkg="etasl_ros_control_examples" type="etasl_pose_publisher.py" required="true"/>
-    <node name="speed_pub" pkg="etasl_ros_control_examples" type="speed_pub.py" required="true"> 
+    <node name="jointstate_grapher" pkg="etasl_ros_control_cmd" type="jointstate_grapher.py" required="true" if="$(arg plot)"/>
+    <node name="lissajous_publisher" pkg="etasl_ros_control_cmd" type="lissajous_publisher.py" required="true"/>
+    <node name="zivid_publisher" pkg="etasl_ros_control_cmd" type="zivid_publisher.py" required="true"/>
+    <node name="etasl_pose_publisher" pkg="etasl_ros_control_cmd" type="etasl_pose_publisher.py" required="true"/>
+    <node name="speed_pub" pkg="etasl_ros_control_cmd" type="speed_pub.py" required="true"> 
         <param name="gain_multiplier" value="$(arg speed)"/>
     </node>
     
     <node name="smach_viz" pkg="smach_viewer" type="smach_viewer.py" required="true"/>
-    <node name="smach_peg" pkg="etasl_ros_control_examples" type="smach_peg.py" required="true"/>
+    <node name="smach_peg" pkg="etasl_ros_control_cmd" type="smach_task.py" required="true"/>
 
 </launch>

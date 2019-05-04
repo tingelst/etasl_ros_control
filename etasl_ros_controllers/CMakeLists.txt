@@ -64,6 +64,10 @@ add_library(etasl_ros_controllers
   src/etasl_example_controller.cpp
 )
 
+add_dependencies(etasl_ros_controllers
+  ${catkin_EXPORTED_TARGETS}
+)
+
 # add_dependencies(franka_example_controllers
 #   ${${PROJECT_NAME}_EXPORTED_TARGETS}
 #   ${catkin_EXPORTED_TARGETS}
@@ -92,17 +96,17 @@ install(TARGETS etasl_ros_controllers
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
-install(DIRECTORY launch
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
-)
+#install(DIRECTORY launch
+#  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+#)
 
 install(DIRECTORY config
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )
 
-install(FILES franka_example_controllers_plugin.xml
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
-)
+#install(FILES franka_example_controllers_plugin.xml
+#  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+#)
 
 ## Tools
 # include(${CMAKE_CURRENT_LIST_DIR}/../cmake/ClangTools.cmake OPTIONAL
