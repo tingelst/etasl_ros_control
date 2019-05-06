@@ -114,11 +114,14 @@ void EtaslController::update(const ros::Time& /*time*/, const ros::Duration& per
   // Write to output channels
   setOutput();
 
-  // If monitor is activated, activate_cmd(moitor argument)
+  // If monitor is activated, activate_cmd(monitor.argument)
   newTask();
 
   // Continously print context to terminal
-  etasl_->readTaskSpecificationString("print(ctx)");
+  if (print_ctx_)
+  {
+    etasl_->readTaskSpecificationString("print(ctx)");
+  }
 }
 
 void EtaslController::newTask()
@@ -129,9 +132,9 @@ void EtaslController::newTask()
     {
       if (etasl_->ctx_->mon_scalar[indx].active)
       {
-        this->stopping(time_);
+        this->stopRequest(ros::Time::now());
         etasl_->activate_cmd(etasl_->ctx_->mon_scalar[indx].argument);
-        this->starting(time_);
+        this->startRequest(ros::Time::now());
         break;
       }
     }
@@ -145,12 +148,18 @@ void EtaslController::configurePubsSrvs(ros::NodeHandle& node_handle)
   event_realtime_pubs_ =
       boost::make_shared<realtime_tools::RealtimePublisher<std_msgs::String>>(node_handle, "e_event", 3);
   activate_cmd_service_ = node_handle.advertiseService("activate_cmd", &EtaslController::activate_cmd_srv, this);
+  if (!ros::param::get("/print_ctx", print_ctx_))
+  {
+    print_ctx_ = false;
+  }
 }
 
 bool EtaslController::activate_cmd_srv(etasl_ros_control_msgs::Command::Request& req,
                                        etasl_ros_control_msgs::Command::Response& res)
 {
+  this->stopRequest(ros::Time::now());
   etasl_->activate_cmd(req.command);
+  this->startRequest(ros::Time::now());
   res.ok = true;
   return true;
 }
@@ -219,7 +228,7 @@ bool EtaslController::configureInput(ros::NodeHandle& node_handle)
         auto input_buffer = boost::make_shared<realtime_tools::RealtimeBuffer<geometry_msgs::Point>>();
         boost::function<void(const geometry_msgs::PointConstPtr&)> callback =
             [input_buffer](const geometry_msgs::PointConstPtr& msg) { input_buffer->writeFromNonRT(*msg); };
-        subs_.push_back(node_handle.subscribe<geometry_msgs::Pose>(input_names_[i], 1, callback));
+        subs_.push_back(node_handle.subscribe<geometry_msgs::Point>(input_names_[i], 1, callback));
         vector_input_buffers_.push_back(input_buffer);
         ++n_vector_inputs_;
       }

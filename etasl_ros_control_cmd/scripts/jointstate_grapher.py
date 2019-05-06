@@ -54,6 +54,7 @@ def jointstate_clbk(data):
         #plt.subplot(616)
         plt.plot(joint_vel_plot[:,5],'m',linewidth=0.1)
         plt.savefig('/home/daglof/joint_vel.svg')
+        plt.show()
     i += 1
 
 def listener():

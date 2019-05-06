@@ -81,8 +81,10 @@ private:
   boost::shared_ptr<realtime_tools::RealtimePublisher<std_msgs::String>> event_realtime_pubs_;
 
   // Service node for activate_cmd()
-  const ros::Time& time_ = ros::Time::now();
   ros::ServiceServer activate_cmd_service_;
+
+  // Param deciding print of context
+  bool print_ctx_;
 
   // Inputs
   std::vector<std::string> input_names_;

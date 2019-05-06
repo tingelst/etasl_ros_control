@@ -107,7 +107,7 @@ for i=1,5 do
         expr = distance_point_point(pegInGripper_orig,peg_orig),
         lower = 1E-3,
         actionname = "exit",
-        argument = "-global.pickup_closein_"..i--.." +global.insertion_lineup_"..i
+        argument = "-global.pickup_closein_"..i
     }
     ctx:popGroup()
 
@@ -167,7 +167,7 @@ for i=1,5 do
         expr = distance_plane_plane(insertionplane_orig,insertionplane_normal,pegInGripper_orig,pegInGripper_dir),
         lower = 1E-3,
         actionname = "exit",
-        argument = "-global.insert_"..i.." -global.force"-- +global.retract_"..i
+        argument = "-global.insert_"..i.." -global.force"
     }
     ctx:popGroup()
     
@@ -252,6 +252,7 @@ Constraint{
 }
 ctx:popGroup()
 
+-- HOME POSITION
 ctx:pushGroup("home")
 Constraint{
     context = ctx,

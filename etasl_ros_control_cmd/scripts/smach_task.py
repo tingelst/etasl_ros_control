@@ -3,10 +3,7 @@
 #  Copyright (c) 2019 Norwegian University of Science and Technology
 #  Use of this source code is governed by the LGPL-3.0 license, see LICENSE
 
-"""Simple example using services to switch etasl controllers and SMACH for state machine handling."""
 import rospy
-import numpy as np
-import matplotlib.pyplot as plt
 import smach
 import smach_ros
 import os
@@ -24,18 +21,14 @@ import roslib; roslib.load_manifest('robotiq_2f_gripper_control')
 from robotiq_2f_gripper_control.msg import _Robotiq2FGripper_robot_output  as outputMsg
 from robotiq_2f_gripper_control.msg import _Robotiq2FGripper_robot_input  as inputMsg
 
-switching_time = []
-
 def activate_cmd_switch(command):
-    global switching_time
     i_time = rospy.get_time()
-    stop()
+    
     rospy.wait_for_service('/etasl_controller_cmd/activate_cmd')
     activate_cmd = rospy.ServiceProxy('/etasl_controller_cmd/activate_cmd', Command)
     resp = activate_cmd(command)
-    start()
     
-    switching_time.append(rospy.get_time()-i_time)
+    rospy.loginfo("Switching time srv: " + str(rospy.get_time()-i_time))
     return resp.ok
 
 def start():
@@ -47,12 +40,6 @@ def stop():
     rospy.wait_for_service("/controller_manager/switch_controller")
     start = rospy.ServiceProxy("/controller_manager/switch_controller",SwitchController)
     start([],["etasl_controller_cmd"],SwitchControllerRequest.STRICT)
-
-def plot_switch_time(switching_time):
-    plt.figure()
-    plt.plot(switching_time,'*k')
-    plt.plot([0,30],[np.average(switching_time),np.average(switching_time)],'r')
-    plt.show()
 
 finished = False
 def gripper_status(status):
@@ -137,7 +124,7 @@ class Gripper(smach.State):
         if rospy.get_param("connection"):
             activate_gripper(self.is_open)
         else:
-            rospy.sleep(2.0)
+            rospy.sleep(1.0)
         if self.is_open:
             activate_cmd_switch("+global.insertion_lineup_"+str(self.counter))
             self.is_open = False
@@ -185,10 +172,8 @@ class Home(smach.State):
         smach.State.__init__(self, outcomes=["home_reached"])
 
     def execute(self, userdata):
-        global switching_time
-        plot_switch_time(switching_time)
-
         rospy.sleep(5.0)
+        stop()
         return "home_reached"        
 
 

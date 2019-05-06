@@ -4,7 +4,9 @@
     <arg name="sim" default="true"/>
     <arg name="speed" default="1.0"/>
     <arg name="plot" default="false"/>
+    <arg name="ctx" default="false"/>
     <param name="connection" value="$(arg connected)"/>
+    <param name="print_ctx" value="$(arg ctx)"/>
 
     <include file="$(find kuka_lab_setup)/launch/load_kukalabsetup.launch"/>
 

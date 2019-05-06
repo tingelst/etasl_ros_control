@@ -511,11 +511,6 @@ void EtaslDriver::evaluate()
   solver_->evaluate_expressions();
 }
 
-// std::string EtaslDriver::getEvent()
-// {
-//   return obs->action_name;
-// }
-
 EtaslDriver::~EtaslDriver()
 {
 }
