@@ -124,7 +124,7 @@ for i=1,5 do
         name        = "lineup_dist"..i,
         expr        = distance_plane_plane(pegInGripper_orig, pegInGripper_dir, hole_orig, hole_dir),
         target      = 0.1,
-        K           = 0.3*speed, 
+        K           = 0.5*speed, 
         weight      = 1.1,
         priority    = 2
     }
@@ -134,15 +134,7 @@ for i=1,5 do
         expr = distance_line_line(pegInGripper_orig, pegInGripper_dir, hole_orig, hole_dir),
         lower = 1E-3,
         actionname = "exit",
-        argument = "-global.insertion_lineup_"..i.." +global.insert_"..i
-    }
-    Monitor{
-        context = ctx,
-        name = "high_force",
-        expr = coord_z(force(netft_data)),
-        lower = -50.0,
-        actionname = "exit",
-        argument = "+global.force"
+        argument = "-global.insertion_lineup_"..i.." +global.insert_"..i.." +global.force"
     }
     ctx:popGroup()
 

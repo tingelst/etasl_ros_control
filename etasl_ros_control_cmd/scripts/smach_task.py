@@ -21,6 +21,7 @@ import roslib; roslib.load_manifest('robotiq_2f_gripper_control')
 from robotiq_2f_gripper_control.msg import _Robotiq2FGripper_robot_output  as outputMsg
 from robotiq_2f_gripper_control.msg import _Robotiq2FGripper_robot_input  as inputMsg
 
+# Service to switch active groups in the eTaSL context
 def activate_cmd_switch(command):
     i_time = rospy.get_time()
     
@@ -30,12 +31,12 @@ def activate_cmd_switch(command):
     
     rospy.loginfo("Switching time srv: " + str(rospy.get_time()-i_time))
     return resp.ok
-
+# Service to start the controller
 def start():
     rospy.wait_for_service("/controller_manager/switch_controller")
     start = rospy.ServiceProxy("/controller_manager/switch_controller",SwitchController)
     start(["etasl_controller_cmd"],[],SwitchControllerRequest.STRICT)
-
+# Service to stop the controller
 def stop():
     rospy.wait_for_service("/controller_manager/switch_controller")
     start = rospy.ServiceProxy("/controller_manager/switch_controller",SwitchController)
@@ -89,6 +90,8 @@ class TakePicture(smach.State):
         except rospy.ServiceException, e:
             rospy.loginfo("Service call failed: %s"%e)
 
+# Nothing executed in this state. 
+# Only a contianer for visualization of eTaSL states in smashviz
 class PickUpLineUp(smach.State):
     def __init__(self):
         smach.State.__init__(self, outcomes=["pickUpLineUp_complete"])
@@ -97,12 +100,13 @@ class PickUpLineUp(smach.State):
     def execute(self, userdata):
         if (self.counter == 1):
             start()
-        #Wait until exit event is published
+        #Wait until exit event is published from etasl controller (/"controller_name"/e_event)
         rospy.wait_for_message('/etasl_controller_cmd/e_event', String)  
         self.counter += 1
         return "pickUpLineUp_complete"
 
-
+# Nothing executed in this state. 
+# Only a contianer for visualization of eTaSL states in smashviz
 class PickUp(smach.State):
     def __init__(self):
         smach.State.__init__(self, outcomes=["pickUp_complete"])
@@ -142,7 +146,7 @@ class InsertionLineUp(smach.State):
         self.insert = True
 
     def execute(self, userdata):
-        #Wait until exit event is published
+        #Wait until exit event is published 
         rospy.wait_for_message('/etasl_controller_cmd/e_event', String)
         if self.insert:
             self.insert = False
@@ -155,6 +159,8 @@ class InsertionLineUp(smach.State):
             self.insert = True
             return "retraction_complete"
 
+# Nothing executed in this state. 
+# Only a contianer for visualization of eTaSL states in smashviz
 class Insertion(smach.State):
     def __init__(self):
         smach.State.__init__(self, outcomes=["insertion_complete"])

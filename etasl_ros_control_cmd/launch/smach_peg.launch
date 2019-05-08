@@ -11,6 +11,7 @@
     <include file="$(find kuka_lab_setup)/launch/load_kukalabsetup.launch"/>
 
     <rosparam file="$(find kuka_rsi_hw_interface)/config/controller_joint_names.yaml" command="load"/>
+    <rosparam file="$(find kuka_rsi_hw_interface)/config/joint_limits.yaml" command="load"/>
     <rosparam file="$(find kuka_rsi_hw_interface)/test/test_params_sim.yaml" command="load" if="$(arg sim)"/>
     <rosparam file="$(find kuka_rsi_hw_interface)/test/test_params.yaml" command="load" unless="$(arg sim)"/>
     <node name="kuka_hardware_interface" pkg="kuka_rsi_hw_interface" type="kuka_hardware_interface_node" respawn="false" output="screen" required="true"/>
@@ -24,11 +25,12 @@
     <node name="kuka_rsi_simulator" pkg="kuka_rsi_simulator" type="kuka_rsi_simulator" args="127.0.0.1 49152" if="$(arg sim)"/>
 
     <node name="rviz" pkg="rviz" type="rviz" args="-d $(find kuka_lab_setup)/config/zero_state_robotiq.rviz" required="true"/>
-
+    <!-- Peg-In-Hole task specific nodes -->
     <node name="gripper_controller" pkg="robotiq_2f_gripper_control" type="Robotiq2FGripperTcpNode.py" args="192.168.250.11" required="true" if="$(arg connected)"/>
-    <node name="netft_publisher" pkg="netft_control" type="netft_node" args="--rate 250 --wrench --address 192.168.1.13 --topic_name etasl_controller_cmd/" required="true"  if="$(arg connected)"/>
+    <node name="netft_publisher" pkg="netft_control" type="netft_node" args="--rate 250 --wrench --address 192.168.1.13" required="true"  if="$(arg connected)">
+        <remap from="netft_data" to="etasl_controller_cmd/netft_data"/>
+    </node>
     <node name="wrench_publisher" pkg="etasl_ros_control_cmd" type="force_publisher.py" required="true" unless="$(arg connected)"/>
-
     <node name="jointstate_grapher" pkg="etasl_ros_control_cmd" type="jointstate_grapher.py" required="true" if="$(arg plot)"/>
     <node name="lissajous_publisher" pkg="etasl_ros_control_cmd" type="lissajous_publisher.py" required="true"/>
     <node name="zivid_publisher" pkg="etasl_ros_control_cmd" type="zivid_publisher.py" required="true"/>
