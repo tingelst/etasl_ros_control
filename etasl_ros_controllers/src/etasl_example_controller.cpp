@@ -19,8 +19,8 @@ namespace etasl_ros_controllers
 {
 bool EtaslController::init(hardware_interface::RobotHW* robot_hardware, ros::NodeHandle& node_handle)
 {
-  position_joint_interface_ = robot_hardware->get<hardware_interface::PositionJointInterface>();
-  if (position_joint_interface_ == nullptr)
+  posvel_joint_interface_ = robot_hardware->get<hardware_interface::PosVelJointInterface>();
+  if (posvel_joint_interface_ == nullptr)
   {
     ROS_ERROR("EtaslController: Error getting position joint interface from hardware!");
     return false;
@@ -31,12 +31,12 @@ bool EtaslController::init(hardware_interface::RobotHW* robot_hardware, ros::Nod
     ROS_ERROR("EtaslController: Could not parse joint names");
   }
   n_joints_ = joint_names_.size();
-  position_joint_handles_.resize(n_joints_);
+  posvel_joint_handles_.resize(n_joints_);
   for (size_t i = 0; i < n_joints_; ++i)
   {
     try
     {
-      position_joint_handles_[i] = position_joint_interface_->getHandle(joint_names_[i]);
+      posvel_joint_handles_[i] = posvel_joint_interface_->getHandle(joint_names_[i]);
     }
     catch (const hardware_interface::HardwareInterfaceException& e)
     {
@@ -71,7 +71,7 @@ void EtaslController::starting(const ros::Time& /* time */)
 {
   for (size_t i = 0; i < n_joints_; ++i)
   {
-    joint_position_map_[joint_names_[i]] = position_joint_handles_[i].getPosition();
+    joint_position_map_[joint_names_[i]] = posvel_joint_handles_[i].getPosition();
   }
 
   DoubleMap converged_values_map;
@@ -89,18 +89,19 @@ void EtaslController::update(const ros::Time& /*time*/, const ros::Duration& per
   // Read joint positions from hardware interface
   for (size_t i = 0; i < n_joints_; ++i)
   {
-    joint_position_map_[joint_names_[i]] = position_joint_handles_[i].getPosition();
+    joint_position_map_[joint_names_[i]] = posvel_joint_handles_[i].getPosition();
   }
   etasl_->setJointPos(joint_position_map_);
 
   // Solve the optimization problem
   etasl_->updateStep(period.toSec());
 
-  // Set the desired joint positions
+  // Set the desired joint positions and velocities
   etasl_->getJointPos(joint_position_map_);
+  etasl_->getJointVel(joint_velocity_map_);
   for (size_t i = 0; i < n_joints_; ++i)
   {
-    position_joint_handles_[i].setCommand(joint_position_map_[joint_names_[i]]);
+    posvel_joint_handles_[i].setCommand(joint_position_map_[joint_names_[i]], joint_velocity_map_[joint_names_[i]]);
   }
 
   // Write to output channels

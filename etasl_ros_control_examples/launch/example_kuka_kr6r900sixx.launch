@@ -5,6 +5,7 @@
     <include file="$(find kuka_kr6_support)/launch/load_kr6r900sixx.launch"/>
 
     <rosparam file="$(find kuka_rsi_hw_interface)/config/controller_joint_names.yaml" command="load"/>
+    <rosparam file="$(find kuka_rsi_hw_interface)/config/joint_limits.yaml" command="load"/>
     <rosparam file="$(find kuka_rsi_hw_interface)/test/test_params_sim.yaml" command="load" if="$(arg sim)"/>
     <rosparam file="$(find kuka_rsi_hw_interface)/test/test_params.yaml" command="load" unless="$(arg sim)"/>
     <node name="kuka_hardware_interface" pkg="kuka_rsi_hw_interface" type="kuka_hardware_interface_node" respawn="false" output="screen" required="true"/>

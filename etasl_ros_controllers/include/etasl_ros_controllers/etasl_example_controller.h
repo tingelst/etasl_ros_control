@@ -15,6 +15,7 @@
 
 #include <controller_interface/multi_interface_controller.h>
 #include <hardware_interface/joint_command_interface.h>
+#include <hardware_interface/posvel_command_interface.h>
 #include <hardware_interface/robot_hw.h>
 #include <ros/package.h>
 #include <ros/node_handle.h>
@@ -40,7 +41,7 @@ using RotationMap = std::map<std::string, Rotation>;
 using TwistMap = std::map<std::string, Twist>;
 
 class EtaslController
-  : public controller_interface::MultiInterfaceController<hardware_interface::PositionJointInterface>
+  : public controller_interface::MultiInterfaceController<hardware_interface::PosVelJointInterface>
 {
 public:
   bool init(hardware_interface::RobotHW* robot_hardware, ros::NodeHandle& node_handle) override;
@@ -48,8 +49,8 @@ public:
   void update(const ros::Time&, const ros::Duration& period) override;
 
 private:
-  hardware_interface::PositionJointInterface* position_joint_interface_;
-  std::vector<hardware_interface::JointHandle> position_joint_handles_;
+  hardware_interface::PosVelJointInterface* posvel_joint_interface_;
+  std::vector<hardware_interface::PosVelJointHandle> posvel_joint_handles_;
 
   void solve();
   bool configureInput(ros::NodeHandle& node_handle);
@@ -58,10 +59,9 @@ private:
   bool configureOutput(ros::NodeHandle& node_handle);
 
   DoubleMap joint_position_map_;
+  DoubleMap joint_velocity_map_;
   std::vector<std::string> joint_names_;
   size_t n_joints_{};
-
-  DoubleMap joint_velocity_map_;
 
   // Inputs
   std::vector<std::string> input_names_;
