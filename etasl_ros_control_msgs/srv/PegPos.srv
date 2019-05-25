@@ -1,0 +1,7 @@
+uint8 peg1_pos
+uint8 peg2_pos
+uint8 peg3_pos
+uint8 peg4_pos
+uint8 peg5_pos
+---
+bool ok
