@@ -305,18 +305,18 @@ Constraint{
 }
 ctx:popGroup()
 
-VelocityLimits {
-    context = ctx,
-    name    = "max_speed_cartesian_a5",
-    expr    = origin(a5_frame),
-    limit   = 0.25
-}
-VelocityLimits{
-    context = ctx,
-    name    = "max_speed_cartesian_gripper",
-    expr    = origin(robotiq_frame),
-    limit   = 0.25
-}
+-- VelocityLimits {
+--     context = ctx,
+--     name    = "max_speed_cartesian_a5",
+--     expr    = origin(a5_frame),
+--     limit   = 0.25
+-- }
+-- VelocityLimits{
+--     context = ctx,
+--     name    = "max_speed_cartesian_gripper",
+--     expr    = origin(robotiq_frame),
+--     limit   = 0.25
+-- }
 
 ctx:activate_cmd("+global.pickup_lineup_1")
 
