@@ -15,13 +15,13 @@ def wrench_publisher():
     rate = rospy.Rate(250)
     try:
         while not rospy.is_shutdown():
-            f = 0.2
-            t = rospy.get_time()
-            f_z = np.abs(np.sin(f*t)*100)
+            # f = 0.2
+            # t = rospy.get_time()
+            # f_z = np.abs(np.sin(f*t)*100)
 
             wrench = Wrench(
-                force=Vector3(0, 0, f_z),
-                torque=Vector3(0, 0, 0)
+                force=Vector3(25, 25, -50.0),
+                torque=Vector3(-5.0, 5.0, 0.0)
             )
             wrench_pub.publish(wrench)
             rate.sleep()

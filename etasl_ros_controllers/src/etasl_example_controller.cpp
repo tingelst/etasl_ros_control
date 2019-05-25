@@ -19,8 +19,8 @@ namespace etasl_ros_controllers
 {
 bool EtaslController::init(hardware_interface::RobotHW* robot_hardware, ros::NodeHandle& node_handle)
 {
-  position_joint_interface_ = robot_hardware->get<hardware_interface::PositionJointInterface>();
-  if (position_joint_interface_ == nullptr)
+  velocity_joint_interface_ = robot_hardware->get<hardware_interface::VelocityJointInterface>();
+  if (velocity_joint_interface_ == nullptr)
   {
     ROS_ERROR("EtaslController: Error getting position joint interface from hardware!");
     return false;
@@ -31,12 +31,12 @@ bool EtaslController::init(hardware_interface::RobotHW* robot_hardware, ros::Nod
     ROS_ERROR("EtaslController: Could not parse joint names");
   }
   n_joints_ = joint_names_.size();
-  position_joint_handles_.resize(n_joints_);
+  velocity_joint_handles_.resize(n_joints_);
   for (size_t i = 0; i < n_joints_; ++i)
   {
     try
     {
-      position_joint_handles_[i] = position_joint_interface_->getHandle(joint_names_[i]);
+      velocity_joint_handles_[i] = velocity_joint_interface_->getHandle(joint_names_[i]);
     }
     catch (const hardware_interface::HardwareInterfaceException& e)
     {
@@ -73,7 +73,7 @@ void EtaslController::starting(const ros::Time& /* time */)
 {
   for (size_t i = 0; i < n_joints_; ++i)
   {
-    joint_position_map_[joint_names_[i]] = position_joint_handles_[i].getPosition();
+    joint_position_map_[joint_names_[i]] = velocity_joint_handles_[i].getPosition();
   }
 
   DoubleMap converged_values_map;
@@ -91,22 +91,25 @@ void EtaslController::update(const ros::Time& /*time*/, const ros::Duration& per
   // Read joint positions from hardware interface
   for (size_t i = 0; i < n_joints_; ++i)
   {
-    joint_position_map_[joint_names_[i]] = position_joint_handles_[i].getPosition();
+    joint_position_map_[joint_names_[i]] = velocity_joint_handles_[i].getPosition();
+    joint_velocity_map_[joint_names_[i]] = velocity_joint_handles_[i].getVelocity();
   }
   etasl_->setJointPos(joint_position_map_);
+  //etasl_->setInputVelocity(joint_velocity_map_);
 
   // Solve the optimization problem
   etasl_->updateStep(period.toSec());
 
-  // Set the desired joint positions
-  etasl_->getJointPos(joint_position_map_);
+  // Set the desired joint positions and velocities
+  //etasl_->getJointPos(joint_position_map_);
+  etasl_->getJointVel(joint_velocity_map_);
   for (size_t i = 0; i < n_joints_; ++i)
   {
-    position_joint_handles_[i].setCommand(joint_position_map_[joint_names_[i]]);
+    velocity_joint_handles_[i].setCommand(joint_velocity_map_[joint_names_[i]]);
   }
 
-  // Publish Joint States
-  pubStates();
+  // // Publish Joint States
+  // pubStates();
 
   // Publish Event
   pubEvent();
@@ -143,8 +146,8 @@ void EtaslController::newTask()
 
 void EtaslController::configurePubsSrvs(ros::NodeHandle& node_handle)
 {
-  jointstate_realtime_pubs_ = boost::make_shared<realtime_tools::RealtimePublisher<sensor_msgs::JointState>>(
-      node_handle, "joint_states_realtime", 10);
+  // jointstate_realtime_pubs_ = boost::make_shared<realtime_tools::RealtimePublisher<sensor_msgs::JointState>>(
+  //     node_handle, "joint_states_realtime", 10);
   event_realtime_pubs_ =
       boost::make_shared<realtime_tools::RealtimePublisher<std_msgs::String>>(node_handle, "e_event", 3);
   activate_cmd_service_ = node_handle.advertiseService("activate_cmd", &EtaslController::activate_cmd_srv, this);
@@ -164,25 +167,25 @@ bool EtaslController::activate_cmd_srv(etasl_ros_control_msgs::Command::Request&
   return true;
 }
 
-void EtaslController::pubStates()
-{
-  etasl_->getJointVel(joint_velocity_map_, 1);
-  joint_pos_.clear();
-  joint_vel_.clear();
-  for (size_t i = 0; i < n_joints_; ++i)
-  {
-    joint_pos_.push_back(joint_position_map_[joint_names_[i]]);
-    joint_vel_.push_back(joint_velocity_map_[joint_names_[i]]);
-  }
-  if (jointstate_realtime_pubs_->trylock())
-  {
-    jointstate_realtime_pubs_->msg_.header.stamp = ros::Time::now();
-    jointstate_realtime_pubs_->msg_.name = joint_names_;
-    jointstate_realtime_pubs_->msg_.position = joint_pos_;
-    jointstate_realtime_pubs_->msg_.velocity = joint_vel_;
-    jointstate_realtime_pubs_->unlockAndPublish();
-  }
-}
+// void EtaslController::pubStates()
+// {
+//   etasl_->getJointVel(joint_velocity_map_, 1);
+//   joint_pos_.clear();
+//   joint_vel_.clear();
+//   for (size_t i = 0; i < n_joints_; ++i)
+//   {
+//     joint_pos_.push_back(joint_position_map_[joint_names_[i]]);
+//     joint_vel_.push_back(joint_velocity_map_[joint_names_[i]]);
+//   }
+//   if (jointstate_realtime_pubs_->trylock())
+//   {
+//     jointstate_realtime_pubs_->msg_.header.stamp = ros::Time::now();
+//     jointstate_realtime_pubs_->msg_.name = joint_names_;
+//     jointstate_realtime_pubs_->msg_.position = joint_pos_;
+//     jointstate_realtime_pubs_->msg_.velocity = joint_vel_;
+//     jointstate_realtime_pubs_->unlockAndPublish();
+//   }
+// }
 
 void EtaslController::pubEvent()
 {

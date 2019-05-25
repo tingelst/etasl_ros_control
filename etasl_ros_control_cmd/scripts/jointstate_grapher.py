@@ -26,41 +26,29 @@ def jointstate_clbk(data):
         joint_vel_plot = np.array(joint_vel)
 
         plt.figure(1)
-        #plt.subplot(611)
         plt.plot(joint_pos_plot[:,0],'b',linewidth=0.1)
-        #plt.subplot(612)
         plt.plot(joint_pos_plot[:,1],'g',linewidth=0.1)
-        #plt.subplot(613)
         plt.plot(joint_pos_plot[:,2],'r',linewidth=0.1)
-        #plt.subplot(614)
         plt.plot(joint_pos_plot[:,3],'y',linewidth=0.1)
-        #plt.subplot(615)
         plt.plot(joint_pos_plot[:,4],'c',linewidth=0.1)
-        #plt.subplot(616)
         plt.plot(joint_pos_plot[:,5],'m',linewidth=0.1)
-        plt.savefig('/home/daglof/joint_pos.svg')
+        plt.savefig('/home/minion/joint_pos.svg')
 
         plt.figure(2)
-        #plt.subplot(611)
         plt.plot(joint_vel_plot[:,0],'b',linewidth=0.1)
-        #plt.subplot(612)
         plt.plot(joint_vel_plot[:,1],'g',linewidth=0.1)
-        #plt.subplot(613)
         plt.plot(joint_vel_plot[:,2],'r',linewidth=0.1)
-        #plt.subplot(614)
         plt.plot(joint_vel_plot[:,3],'y',linewidth=0.1)
-        #plt.subplot(615)
         plt.plot(joint_vel_plot[:,4],'c',linewidth=0.1)
-        #plt.subplot(616)
         plt.plot(joint_vel_plot[:,5],'m',linewidth=0.1)
-        plt.savefig('/home/daglof/joint_vel.svg')
+        plt.savefig('/home/minion/joint_vel.svg')
         plt.show()
     i += 1
 
 def listener():
     rospy.init_node('jointstate_grapher')
     
-    rospy.Subscriber('/etasl_controller_cmd/joint_states_realtime', JointState, jointstate_clbk)
+    rospy.Subscriber('/joint_states_realtime', JointState, jointstate_clbk)
 
     rospy.spin()
 

@@ -26,31 +26,32 @@ def pub_pose(req):
     rviz_peg5_frame = rospy.Publisher(
         '/rviz/peg5_frame', PoseStamped, queue_size=3) 
 
-    rand_quat = quat(axis=[0,0,1], angle=np.pi/2)*quat(axis=[1,0,0], angle=np.random.uniform(0, 2*np.pi))
+    #rand_quat = quat(axis=[0,0,1], angle=np.pi/2)*quat(axis=[1,0,0], angle=np.random.uniform(0, 2*np.pi))
+    quater = quat(axis=[0,0,1], angle=np.pi/2)*quat(axis=[1,0,0], angle=np.deg2rad(40))
     block_frame=Pose(
-        position=Point(0.0, -0.5, 0.02), 
-        orientation=Quaternion(rand_quat.elements[0], rand_quat.elements[1], rand_quat.elements[2], rand_quat.elements[3])
-        #orientation=Quaternion(0.5, -0.5, -0.5, 0.5)
-        #orientation=Quaternion(0.654021, 0.652994, 0.270263, 0.269839)
+        position=Point(-0.14, -0.5, 0.018), 
+        #orientation=Quaternion(rand_quat.elements[0], rand_quat.elements[1], rand_quat.elements[2], rand_quat.elements[3])
+        orientation=Quaternion(quater.elements[0],quater.elements[1],quater.elements[2],quater.elements[3])
     )
     peg1_frame=Pose(
-        position=Point(np.random.uniform(-0.22,0.22), np.random.uniform(-0.85,-0.25), 0.02),
+        #position=Point(np.random.uniform(-0.22,0.22), np.random.uniform(-0.85,-0.25), 0.018),
+        position=Point(0.14767, -0.42921, 0.018),
         orientation=Quaternion(0.0, 0.0, 0.0, 1.0)
     )
     peg2_frame=Pose(
-        position=Point(np.random.uniform(-0.22,0.22), np.random.uniform(-0.85,-0.25), 0.02), 
+        position=Point(0.00503, -0.50685, 0.018), 
         orientation=Quaternion(0.0, 0.0, 0.0, 1.0)
     )
     peg3_frame=Pose(
-        position=Point(np.random.uniform(-0.22,0.22), np.random.uniform(-0.85,-0.25), 0.02), 
+        position=Point(-0.15369, -0.66922, 0.018), 
         orientation=Quaternion(0.0, 0.0, 0.0, 1.0)
     )      
     peg4_frame=Pose(
-        position=Point(np.random.uniform(-0.22,0.22), np.random.uniform(-0.85,-0.25), 0.02), 
+        position=Point(-0.07902, -0.77391, 0.018), 
         orientation=Quaternion(0.0, 0.0, 0.0, 1.0)
     )   
     peg5_frame=Pose(
-        position=Point(np.random.uniform(-0.22,0.22), np.random.uniform(-0.85,-0.25), 0.02), 
+        position=Point(0.09036, -0.65852, 0.018), 
         orientation=Quaternion(0.0, 0.0, 0.0, 1.0)
     )
 
@@ -84,16 +85,16 @@ def pub_pose(req):
     if req.take_picture:
         try:
             while not rospy.is_shutdown():
+                
+                if (i>40):
+                    rviz_block_frame.publish(block_frame_s)
+                    rviz_peg1_frame.publish(peg1_frame_s)
+                    rviz_peg2_frame.publish(peg2_frame_s)
+                    rviz_peg3_frame.publish(peg3_frame_s)
+                    rviz_peg4_frame.publish(peg4_frame_s)
+                    rviz_peg5_frame.publish(peg5_frame_s)
 
-                rviz_block_frame.publish(block_frame_s)
-                rviz_peg1_frame.publish(peg1_frame_s)
-                rviz_peg2_frame.publish(peg2_frame_s)
-                rviz_peg3_frame.publish(peg3_frame_s)
-                rviz_peg4_frame.publish(peg4_frame_s)
-                rviz_peg5_frame.publish(peg5_frame_s)
-
-                if (i > 10):    
-                    #rospy.set_param('picture_taken', 1)
+                if (i > 50):
                     return PictureResponse(True)
                 i += 1
                 rate.sleep()

@@ -13,6 +13,7 @@ add_service_files(
   FILES
   Command.srv
   Picture.srv
+  PegPos.srv
 )
 
 generate_messages(

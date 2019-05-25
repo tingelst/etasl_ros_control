@@ -39,15 +39,21 @@ def start():
 # Service to stop the controller
 def stop():
     rospy.wait_for_service("/controller_manager/switch_controller")
-    start = rospy.ServiceProxy("/controller_manager/switch_controller",SwitchController)
-    start([],["etasl_controller_cmd"],SwitchControllerRequest.STRICT)
+    stop = rospy.ServiceProxy("/controller_manager/switch_controller",SwitchController)
+    stop([],["etasl_controller_cmd"],SwitchControllerRequest.STRICT)
+
+def peg_posititon(p1,p2,p3,p4,p5):
+    rospy.wait_for_service('peg_pos')
+    pegs = rospy.ServiceProxy('peg_pos', PegPos)
+    resp = pegs(int(p1),int(p2),int(p3),int(p4),int(p5))
 
 finished = False
 def gripper_status(status):
     global finished
+    finished = False
     if (status.gOBJ == 0):
         finished = False
-    else:
+    elif (status.gOBJ > 0):
         finished = True
 
 
@@ -58,35 +64,37 @@ def activate_gripper(is_open):
 
     command = outputMsg.Robotiq2FGripper_robot_output()
     """ Init command """
-    command.rACT = 1
-    command.rGTO = 1
+    command.rACT = 1 # Activate
+    command.rGTO = 1 
     command.rATR = 0
     command.rSP = 255 # Max speed
     command.rFR = 255 # Max force    
 
+    rate = rospy.Rate(250)
+    time_i = rospy.Time.now().to_sec()
     if is_open:
         command.rPR = 255 #I.e. closing gripper
     elif not is_open:
-        command.rPR = 0 #I.e. opening gripper
+        command.rPR = 170 #I.e. opening gripper
     while not finished:        
         pub.publish(command)
         rate.sleep()
+        if (rospy.Time.now().to_sec()-time_i > 5):
+            return False
 
 class TakePicture(smach.State):
     def __init__(self):
-        smach.State.__init__(self, outcomes=["picture_taken"])
-        self.counter = 1
+        smach.State.__init__(self, outcomes=["picture_taken","retry_picture"])
 
-    def execute(self, userdata):
-        rospy.sleep(5.0)
-        
+    def execute(self, userdata):        
         rospy.wait_for_service('take_picture')
         try:
             take_picture = rospy.ServiceProxy('take_picture', Picture)
             resp = take_picture(True)
             if resp.picture_taken:
-                self.counter += 1
                 return "picture_taken"
+            else:
+                return "retry_picture"
         except rospy.ServiceException, e:
             rospy.loginfo("Service call failed: %s"%e)
 
@@ -100,6 +108,7 @@ class PickUpLineUp(smach.State):
     def execute(self, userdata):
         if (self.counter == 1):
             start()
+        activate_gripper(False)
         #Wait until exit event is published from etasl controller (/"controller_name"/e_event)
         rospy.wait_for_message('/etasl_controller_cmd/e_event', String)  
         self.counter += 1
@@ -120,20 +129,44 @@ class PickUp(smach.State):
 
 class Gripper(smach.State):
     def __init__(self):
-        smach.State.__init__(self, outcomes=["gripper_closed","gripper_opened"])
+        smach.State.__init__(self, outcomes=["gripper_closed","gripper_opened","retry_gripper"])
         self.counter = 1
         self.is_open = True
 
     def execute(self, userdata):
+        # OPEN/CLOSE GRIPPER (IF SIMULATION, WAIT 1s)
         if rospy.get_param("connection"):
-            activate_gripper(self.is_open)
+            if not activate_gripper(self.is_open):
+                return "retry_gripper"       
         else:
             rospy.sleep(1.0)
         if self.is_open:
+            if self.counter == 1:
+                peg_posititon(1,0,0,0,0)
+            elif self.counter == 2:
+                peg_posititon(2,1,0,0,0)
+            elif self.counter == 3:
+                peg_posititon(2,2,1,0,0)
+            elif self.counter == 4:
+                peg_posititon(2,2,2,1,0)
+            elif self.counter == 5:
+                peg_posititon(2,2,2,2,1)
+            # ACTIVATING NEXT GROUP IN eTaSL
             activate_cmd_switch("+global.insertion_lineup_"+str(self.counter))
             self.is_open = False
             return "gripper_closed"
         else:
+            if self.counter == 1:
+                peg_posititon(2,0,0,0,0)
+            elif self.counter == 2:
+                peg_posititon(2,2,0,0,0)
+            elif self.counter == 3:
+                peg_posititon(2,2,2,0,0)
+            elif self.counter == 4:
+                peg_posititon(2,2,2,2,0)
+            elif self.counter == 5:
+                peg_posititon(2,2,2,2,2)   
+            # ACTIVATING NEXT GROUP IN eTaSL         
             activate_cmd_switch("+global.retract_"+str(self.counter))
             self.counter += 1
             self.is_open = True
@@ -191,14 +224,16 @@ if __name__ == "__main__":
     sm = smach.StateMachine(outcomes=["fully_complete"])
     with sm:
         smach.StateMachine.add("TakePicture", TakePicture(),
-                               transitions={"picture_taken": "PickUpLineUp"})
+                               transitions={"picture_taken": "PickUpLineUp",
+                                            "retry_picture": "TakePicture"})
         smach.StateMachine.add("PickUpLineUp", PickUpLineUp(),
                                transitions={"pickUpLineUp_complete": "PickUp"})
         smach.StateMachine.add("PickUp", PickUp(),
                                transitions={"pickUp_complete": "Gripper"}) 
         smach.StateMachine.add("Gripper", Gripper(),
                                transitions={"gripper_closed": "InsertionLineUp",
-                                            "gripper_opened": "InsertionLineUp"}) 
+                                            "gripper_opened": "InsertionLineUp",
+                                            "retry_gripper": "Gripper"}) 
         smach.StateMachine.add("InsertionLineUp", InsertionLineUp(),
                                transitions={"insertionLineUp_complete": "Insertion",
                                             "retraction_complete": "PickUpLineUp",

@@ -13,9 +13,7 @@ install(DIRECTORY launch config scripts
 catkin_install_python(
   PROGRAMS 
   scripts/etasl_pose_publisher.py
-  scripts/force_publisher.py
   scripts/jointstate_grapher.py
-  scripts/lissajous_publisher.py 
   scripts/smach_task.py
   scripts/speed_pub.py
   scripts/zivid_publisher.py

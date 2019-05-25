@@ -4,7 +4,7 @@ joint_state_controller:
   publish_rate: 50
   extra_joints:
     - name: 'finger_joint'
-      position: 0.6
+      position: 0.65
 
 # eTaSl example controller
 etasl_controller_cmd:
@@ -28,6 +28,23 @@ etasl_controller_cmd:
       - "netft_data"
     types:
       - "Scalar"
+      - "Frame"
+      - "Frame"
+      - "Frame"
+      - "Frame"
+      - "Frame"
+      - "Frame"
+      - "Wrench"
+  output:
+    names:
+      - "ee_frame"
+      - "peg_hole_1"
+      - "peg_hole_2"
+      - "peg_hole_3"
+      - "peg_hole_4"
+      - "peg_hole_5"
+      - "netft_transform"
+    types:
       - "Frame"
       - "Frame"
       - "Frame"

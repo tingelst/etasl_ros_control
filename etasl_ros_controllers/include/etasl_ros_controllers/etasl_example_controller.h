@@ -44,7 +44,7 @@ using TwistMap = std::map<std::string, Twist>;
 using WrenchMap = std::map<std::string, Wrench>;
 
 class EtaslController
-  : public controller_interface::MultiInterfaceController<hardware_interface::PositionJointInterface>
+  : public controller_interface::MultiInterfaceController<hardware_interface::VelocityJointInterface>
 {
 public:
   bool init(hardware_interface::RobotHW* robot_hardware, ros::NodeHandle& node_handle) override;
@@ -52,12 +52,12 @@ public:
   void update(const ros::Time&, const ros::Duration& period) override;
 
 private:
-  hardware_interface::PositionJointInterface* position_joint_interface_;
-  std::vector<hardware_interface::JointHandle> position_joint_handles_;
+  hardware_interface::VelocityJointInterface* velocity_joint_interface_;
+  std::vector<hardware_interface::JointHandle> velocity_joint_handles_;
 
   void solve();
   void configurePubsSrvs(ros::NodeHandle& node_handle);
-  void pubStates();
+  //void pubStates();
   void pubEvent();
   bool configureInput(ros::NodeHandle& node_handle);
   void getInput();
@@ -67,15 +67,14 @@ private:
   bool activate_cmd_srv(etasl_ros_control_msgs::Command::Request& req, etasl_ros_control_msgs::Command::Response& res);
 
   DoubleMap joint_position_map_;
+  DoubleMap joint_velocity_map_;
   std::vector<std::string> joint_names_;
   size_t n_joints_{};
 
-  DoubleMap joint_velocity_map_;
-
-  // Realtime joint state publisher
-  std::vector<double> joint_pos_;
-  std::vector<double> joint_vel_;
-  boost::shared_ptr<realtime_tools::RealtimePublisher<sensor_msgs::JointState>> jointstate_realtime_pubs_;
+  // // Realtime joint state publisher
+  // std::vector<double> joint_pos_;
+  // std::vector<double> joint_vel_;
+  // boost::shared_ptr<realtime_tools::RealtimePublisher<sensor_msgs::JointState>> jointstate_realtime_pubs_;
 
   // Realtime event publisher
   boost::shared_ptr<realtime_tools::RealtimePublisher<std_msgs::String>> event_realtime_pubs_;
