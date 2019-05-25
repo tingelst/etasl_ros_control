@@ -1,18 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <launch>
     <arg name="connected" default="false"/><!-- Are gripper and force sensor connected? -->
-    <arg name="sim" default="true"/><!-- Are you running the physical robot? -->
     <arg name="speed" default="1.0"/><!-- Mulitplier for K in eTaSL (K*speed) -->
-    <arg name="ctx" default="false"/><!-- Do you want to print the eTaSL context to terminal? -->
     <param name="connection" value="$(arg connected)"/>
-    <param name="print_ctx" value="$(arg ctx)"/>
-    <!-- Robot Model -->
-    <include file="$(find kuka_lab_setup)/launch/load_kukalabsetup.launch"/>
-    <!-- Hardware -->
-    <rosparam file="$(find kuka_rsi_hw_interface)/config/controller_joint_names.yaml" command="load"/>
-    <rosparam file="$(find kuka_rsi_hw_interface)/config/joint_limits.yaml" command="load"/>
-    <rosparam file="$(find kuka_rsi_hw_interface)/test/test_params_sim.yaml" command="load" if="$(arg sim)"/>
-    <rosparam file="$(find kuka_rsi_hw_interface)/test/test_params.yaml" command="load" unless="$(arg sim)"/>
     <!-- Robot states -->
     <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"/>
     <!-- Visualization -->

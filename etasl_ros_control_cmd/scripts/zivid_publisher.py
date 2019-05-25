@@ -27,7 +27,7 @@ def pub_pose(req):
         '/rviz/peg5_frame', PoseStamped, queue_size=3) 
 
     #rand_quat = quat(axis=[0,0,1], angle=np.pi/2)*quat(axis=[1,0,0], angle=np.random.uniform(0, 2*np.pi))
-    quater = quat(axis=[0,0,1], angle=np.pi/2)*quat(axis=[1,0,0], angle=np.deg2rad(40))
+    quater = quat(axis=[0,0,1], angle=np.pi/2)*quat(axis=[1,0,0], angle=np.deg2rad(320))
     block_frame=Pose(
         position=Point(-0.14, -0.5, 0.018), 
         #orientation=Quaternion(rand_quat.elements[0], rand_quat.elements[1], rand_quat.elements[2], rand_quat.elements[3])

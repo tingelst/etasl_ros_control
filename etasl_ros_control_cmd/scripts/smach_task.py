@@ -71,7 +71,7 @@ def activate_gripper(is_open):
     command.rFR = 255 # Max force    
 
     rate = rospy.Rate(250)
-    time_i = rospy.Time.now().to_sec()
+    time_i = rospy.get_time()
     if is_open:
         command.rPR = 255 #I.e. closing gripper
     elif not is_open:
@@ -79,7 +79,7 @@ def activate_gripper(is_open):
     while not finished:        
         pub.publish(command)
         rate.sleep()
-        if (rospy.Time.now().to_sec()-time_i > 5):
+        if (rospy.get_time()-time_i > 5):
             return False
 
 class TakePicture(smach.State):
@@ -108,7 +108,9 @@ class PickUpLineUp(smach.State):
     def execute(self, userdata):
         if (self.counter == 1):
             start()
-        activate_gripper(False)
+            if rospy.get_param("connection"):
+                activate_gripper(False)
+
         #Wait until exit event is published from etasl controller (/"controller_name"/e_event)
         rospy.wait_for_message('/etasl_controller_cmd/e_event', String)  
         self.counter += 1
