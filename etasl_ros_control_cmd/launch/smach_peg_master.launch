@@ -18,10 +18,9 @@
     <node name="speed_pub" pkg="etasl_ros_control_cmd" type="speed_pub.py" required="true"> 
         <param name="gain_multiplier" value="$(arg speed)"/>
     </node>
-    <!-- State Machine -->
-    <node name="smach_peg" pkg="etasl_ros_control_cmd" type="smach_task.py" required="true"/>
-
     <node name="wrench_publisher" pkg="etasl_ros_control_examples" type="force_publisher.py" required="true" unless="$(arg connected)">
         <remap from="/etasl_controller_lissajous/netft_data" to="/etasl_controller_cmd/netft_data"/>
     </node>
+    <!-- State Machine -->
+    <node name="smach_peg" pkg="etasl_ros_control_cmd" type="smach_task.py" required="true"/>
 </launch>
