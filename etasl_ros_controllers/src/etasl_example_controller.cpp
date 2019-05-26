@@ -85,6 +85,7 @@ void EtaslController::starting(const ros::Time& /* time */)
 
 void EtaslController::update(const ros::Time& /*time*/, const ros::Duration& period)
 {
+  i_time_ = ros::Time::now();
   // Read from input channels
   getInput();
 
@@ -138,6 +139,7 @@ void EtaslController::newTask()
         this->stopRequest(ros::Time::now());
         etasl_->activate_cmd(etasl_->ctx_->mon_scalar[indx].argument);
         this->startRequest(ros::Time::now());
+        ROS_INFO_STREAM("Switch: " << ros::Time::now() - i_time_);
         break;
       }
     }

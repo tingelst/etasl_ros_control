@@ -84,6 +84,7 @@ private:
 
   // Param deciding print of context
   bool print_ctx_;
+  ros::Time i_time_;
 
   // Inputs
   std::vector<std::string> input_names_;
