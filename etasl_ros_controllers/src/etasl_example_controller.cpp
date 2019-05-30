@@ -85,7 +85,6 @@ void EtaslController::starting(const ros::Time& /* time */)
 
 void EtaslController::update(const ros::Time& /*time*/, const ros::Duration& period)
 {
-  i_time_ = ros::Time::now();
   // Read from input channels
   getInput();
 
@@ -134,13 +133,17 @@ void EtaslController::newTask()
   {
     for (size_t indx = 0; indx < etasl_->ctx_->mon_scalar.size(); ++indx)
     {
-      if (etasl_->ctx_->mon_scalar[indx].active)
+      MonitorScalar& m = etasl_->ctx_->mon_scalar[indx];
+      if (m.active)
       {
-        this->stopRequest(ros::Time::now());
-        etasl_->activate_cmd(etasl_->ctx_->mon_scalar[indx].argument);
-        this->startRequest(ros::Time::now());
-        ROS_INFO_STREAM("Switch: " << ros::Time::now() - i_time_);
-        break;
+        double value = m.expr->value();
+        if ((value < m.lower) || (m.upper < value)) 
+        {
+          this->stopRequest(ros::Time::now());
+          etasl_->activate_cmd(m.argument);
+          this->startRequest(ros::Time::now());
+          break;
+        }
       }
     }
   }
