@@ -108,12 +108,6 @@ void EtaslController::update(const ros::Time& /*time*/, const ros::Duration& per
     velocity_joint_handles_[i].setCommand(joint_velocity_map_[joint_names_[i]]);
   }
 
-  // // Publish Joint States
-  // pubStates();
-
-  // Publish Event
-  pubEvent();
-
   // Write to output channels
   setOutput();
 
@@ -141,6 +135,11 @@ void EtaslController::newTask()
         {
           this->stopRequest(ros::Time::now());
           etasl_->activate_cmd(m.argument);
+          if (event_realtime_pubs_->trylock())
+          {
+            event_realtime_pubs_->msg_.data = m.name;
+            event_realtime_pubs_->unlockAndPublish();
+          }
           this->startRequest(ros::Time::now());
           break;
         }
@@ -151,8 +150,6 @@ void EtaslController::newTask()
 
 void EtaslController::configurePubsSrvs(ros::NodeHandle& node_handle)
 {
-  // jointstate_realtime_pubs_ = boost::make_shared<realtime_tools::RealtimePublisher<sensor_msgs::JointState>>(
-  //     node_handle, "joint_states_realtime", 10);
   event_realtime_pubs_ =
       boost::make_shared<realtime_tools::RealtimePublisher<std_msgs::String>>(node_handle, "e_event", 3);
   activate_cmd_service_ = node_handle.advertiseService("activate_cmd", &EtaslController::activate_cmd_srv, this);
@@ -170,38 +167,6 @@ bool EtaslController::activate_cmd_srv(etasl_ros_control_msgs::Command::Request&
   this->startRequest(ros::Time::now());
   res.ok = true;
   return true;
-}
-
-// void EtaslController::pubStates()
-// {
-//   etasl_->getJointVel(joint_velocity_map_, 1);
-//   joint_pos_.clear();
-//   joint_vel_.clear();
-//   for (size_t i = 0; i < n_joints_; ++i)
-//   {
-//     joint_pos_.push_back(joint_position_map_[joint_names_[i]]);
-//     joint_vel_.push_back(joint_velocity_map_[joint_names_[i]]);
-//   }
-//   if (jointstate_realtime_pubs_->trylock())
-//   {
-//     jointstate_realtime_pubs_->msg_.header.stamp = ros::Time::now();
-//     jointstate_realtime_pubs_->msg_.name = joint_names_;
-//     jointstate_realtime_pubs_->msg_.position = joint_pos_;
-//     jointstate_realtime_pubs_->msg_.velocity = joint_vel_;
-//     jointstate_realtime_pubs_->unlockAndPublish();
-//   }
-// }
-
-void EtaslController::pubEvent()
-{
-  if (etasl_->checkFinishStatus() == 1)
-  {
-    if (event_realtime_pubs_->trylock())
-    {
-      event_realtime_pubs_->msg_.data = "exit";
-      event_realtime_pubs_->unlockAndPublish();
-    }
-  }
 }
 
 bool EtaslController::configureInput(ros::NodeHandle& node_handle)

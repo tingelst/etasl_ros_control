@@ -91,16 +91,6 @@ void EtaslDriver::activate_cmd(const std::string& command)
   ctx_->activate_cmd(command);
 }
 
-int EtaslDriver::checkFinishStatus()
-{
-  ctx_->checkMonitors();
-  if (ctx_->getFinishStatus())
-  {
-    return 1;
-  }
-  return 0;
-}
-
 int EtaslDriver::setInput(const DoubleMap& dmap)
 {
   for (auto item : dmap)
@@ -486,8 +476,6 @@ int EtaslDriver::updateStep(double dt)
                      << ctx_);
     return -1;
   }
-  
-  return checkFinishStatus();
 }
 
 int EtaslDriver::solve()
@@ -502,8 +490,6 @@ int EtaslDriver::solve()
                     << ctx_);
     return -1;
   }
-  
-  return checkFinishStatus();
 }
 
 void EtaslDriver::evaluate()
