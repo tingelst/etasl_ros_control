@@ -57,8 +57,6 @@ private:
 
   void solve();
   void configurePubsSrvs(ros::NodeHandle& node_handle);
-  //void pubStates();
-  void pubEvent();
   bool configureInput(ros::NodeHandle& node_handle);
   void getInput();
   void setOutput();
@@ -71,11 +69,6 @@ private:
   std::vector<std::string> joint_names_;
   size_t n_joints_{};
 
-  // // Realtime joint state publisher
-  // std::vector<double> joint_pos_;
-  // std::vector<double> joint_vel_;
-  // boost::shared_ptr<realtime_tools::RealtimePublisher<sensor_msgs::JointState>> jointstate_realtime_pubs_;
-
   // Realtime event publisher
   boost::shared_ptr<realtime_tools::RealtimePublisher<std_msgs::String>> event_realtime_pubs_;
 
@@ -84,7 +77,6 @@ private:
 
   // Param deciding print of context
   bool print_ctx_;
-  ros::Time i_time_;
 
   // Inputs
   std::vector<std::string> input_names_;

@@ -45,7 +45,6 @@ class EtaslDriver
   boost::shared_ptr<qpOASESSolver> solver_;
   bool etaslread;
   bool initialized_;
-  // boost::shared_ptr<Context> ctx_;
   boost::shared_ptr<LuaContext> lua;
   boost::shared_ptr<Observer> obs_;
   boost::shared_ptr<OutputGenerator> out_;
@@ -194,8 +193,6 @@ public:
    * and configures the controller accordingly.
    */
   void activate_cmd(const std::string& command);
-
-  int checkFinishStatus();
 
   /**
    * Performs the following tasks in this order:
