@@ -50,31 +50,31 @@
     local-name: kuka_experimental
     uri: https://github.com/ra-mtp-ntnu/kuka_experimental.git
     version: velocity-interface
--git:
+- git:
     local-name: executive_smach
     uri: https://github.com/ros/executive_smach.git
     version: indigo-devel
--git:
+- git:
     local-name: executive_smach_visualization
     uri: https://github.com/ros-visualization/executive_smach_visualization.git
     version: indigo-devel
--git:
+- git:
     local-name: robotiq
     uri: https://github.com/ros-industrial/robotiq.git
     version: indigo-devel
--git:
+- git:
     local-name: netft
     uri: https://github.com/fsuarez6/netft.git
     version: master
--git:
+- git:
     local-name: kuka_lab_setup
     uri: https://github.com/daglofthus/kuka_lab_setup.git
     version: master
--git:
+- git:
     local-name: forcesensor
     uri: https://github.com/daglofthus/forcesensor.git
     version: master
--git:
+- git:
     local-name: workspace
     uri: https://github.com/daglofthus/workspace.git
     version: master
