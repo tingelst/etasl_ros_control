@@ -21,6 +21,8 @@
 #include <ros/time.h>
 #include <kdl_conversions/kdl_msg.h>
 #include <std_msgs/Float64.h>
+#include <std_msgs/String.h>
+#include <sensor_msgs/JointState.h>
 #include <realtime_tools/realtime_publisher.h>
 #include <realtime_tools/realtime_buffer.h>
 
@@ -29,6 +31,7 @@
 #include <expressiongraph/context_scripting.hpp>
 
 #include <etasl_ros_controllers/etasl_driver.h>
+#include <etasl_ros_control_msgs/Command.h>
 
 using namespace KDL;
 
@@ -38,9 +41,10 @@ using FrameMap = std::map<std::string, Frame>;
 using VectorMap = std::map<std::string, Vector>;
 using RotationMap = std::map<std::string, Rotation>;
 using TwistMap = std::map<std::string, Twist>;
+using WrenchMap = std::map<std::string, Wrench>;
 
 class EtaslController
-  : public controller_interface::MultiInterfaceController<hardware_interface::PositionJointInterface>
+  : public controller_interface::MultiInterfaceController<hardware_interface::VelocityJointInterface>
 {
 public:
   bool init(hardware_interface::RobotHW* robot_hardware, ros::NodeHandle& node_handle) override;
@@ -48,20 +52,31 @@ public:
   void update(const ros::Time&, const ros::Duration& period) override;
 
 private:
-  hardware_interface::PositionJointInterface* position_joint_interface_;
-  std::vector<hardware_interface::JointHandle> position_joint_handles_;
+  hardware_interface::VelocityJointInterface* velocity_joint_interface_;
+  std::vector<hardware_interface::JointHandle> velocity_joint_handles_;
 
   void solve();
+  void configurePubsSrvs(ros::NodeHandle& node_handle);
   bool configureInput(ros::NodeHandle& node_handle);
   void getInput();
   void setOutput();
   bool configureOutput(ros::NodeHandle& node_handle);
+  void newTask();
+  bool activate_cmd_srv(etasl_ros_control_msgs::Command::Request& req, etasl_ros_control_msgs::Command::Response& res);
 
   DoubleMap joint_position_map_;
+  DoubleMap joint_velocity_map_;
   std::vector<std::string> joint_names_;
   size_t n_joints_{};
 
-  DoubleMap joint_velocity_map_;
+  // Realtime event publisher
+  boost::shared_ptr<realtime_tools::RealtimePublisher<std_msgs::String>> event_realtime_pubs_;
+
+  // Service node for activate_cmd()
+  ros::ServiceServer activate_cmd_service_;
+
+  // Param deciding print of context
+  bool print_ctx_;
 
   // Inputs
   std::vector<std::string> input_names_;
@@ -94,6 +109,11 @@ private:
   std::vector<std::string> twist_input_names_;
   std::vector<boost::shared_ptr<realtime_tools::RealtimeBuffer<geometry_msgs::Twist>>> twist_input_buffers_;
 
+  WrenchMap wrench_input_map_;
+  size_t n_wrench_inputs_{};
+  std::vector<std::string> wrench_input_names_;
+  std::vector<boost::shared_ptr<realtime_tools::RealtimeBuffer<geometry_msgs::Wrench>>> wrench_input_buffers_;
+
   // Outputs
   DoubleMap output_map_;
   std::vector<std::string> output_names_;
@@ -124,6 +144,11 @@ private:
   TwistMap twist_output_map_;
   size_t n_twist_outputs_{};
   std::vector<boost::shared_ptr<realtime_tools::RealtimePublisher<geometry_msgs::Twist>>> twist_realtime_pubs_;
+
+  std::vector<std::string> wrench_output_names_;
+  WrenchMap wrench_output_map_;
+  size_t n_wrench_outputs_{};
+  std::vector<boost::shared_ptr<realtime_tools::RealtimePublisher<geometry_msgs::Wrench>>> wrench_realtime_pubs_;
 
   std::string task_specification_;
   boost::shared_ptr<EtaslDriver> etasl_;

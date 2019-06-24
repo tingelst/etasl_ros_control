@@ -7,9 +7,11 @@ set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(catkin REQUIRED COMPONENTS
+  etasl_ros_control_msgs
   expressiongraph_context
   expressiongraph_context_lua
   expressiongraph_solver_qpoases
+  expressiongraph_collision
   controller_interface
   dynamic_reconfigure
   kdl_conversions
@@ -19,9 +21,12 @@ find_package(catkin REQUIRED COMPONENTS
   pluginlib
   realtime_tools
   roscpp
+  rospy
+  std_msgs
 )
 
 find_package(Eigen3 REQUIRED)
+find_package( Bullet REQUIRED)
 
 # add_message_files(FILES
 #   JointTorqueComparison.msg
@@ -35,11 +40,14 @@ find_package(Eigen3 REQUIRED)
 # )
 
 catkin_package(
-  LIBRARIES etasl_ros_controllers
+  INCLUDE_DIRS include
+  LIBRARIES etasl_ros_controllers ${BULLET_LIBRARIES}
   CATKIN_DEPENDS
+    etasl_ros_control_msgs
     expressiongraph_context
     expressiongraph_context_lua
     expressiongraph_solver_qpoases
+    expressiongraph_collision
     controller_interface
     dynamic_reconfigure
     kdl_conversions
@@ -54,6 +62,10 @@ catkin_package(
 add_library(etasl_ros_controllers
   src/etasl_driver.cpp
   src/etasl_example_controller.cpp
+)
+
+add_dependencies(etasl_ros_controllers
+  ${catkin_EXPORTED_TARGETS}
 )
 
 # add_dependencies(franka_example_controllers
@@ -84,17 +96,17 @@ install(TARGETS etasl_ros_controllers
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
-install(DIRECTORY launch
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
-)
+#install(DIRECTORY launch
+#  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+#)
 
 install(DIRECTORY config
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )
 
-install(FILES franka_example_controllers_plugin.xml
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
-)
+#install(FILES franka_example_controllers_plugin.xml
+#  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+#)
 
 ## Tools
 # include(${CMAKE_CURRENT_LIST_DIR}/../cmake/ClangTools.cmake OPTIONAL

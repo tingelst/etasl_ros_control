@@ -19,8 +19,8 @@ namespace etasl_ros_controllers
 {
 bool EtaslController::init(hardware_interface::RobotHW* robot_hardware, ros::NodeHandle& node_handle)
 {
-  position_joint_interface_ = robot_hardware->get<hardware_interface::PositionJointInterface>();
-  if (position_joint_interface_ == nullptr)
+  velocity_joint_interface_ = robot_hardware->get<hardware_interface::VelocityJointInterface>();
+  if (velocity_joint_interface_ == nullptr)
   {
     ROS_ERROR("EtaslController: Error getting position joint interface from hardware!");
     return false;
@@ -31,12 +31,12 @@ bool EtaslController::init(hardware_interface::RobotHW* robot_hardware, ros::Nod
     ROS_ERROR("EtaslController: Could not parse joint names");
   }
   n_joints_ = joint_names_.size();
-  position_joint_handles_.resize(n_joints_);
+  velocity_joint_handles_.resize(n_joints_);
   for (size_t i = 0; i < n_joints_; ++i)
   {
     try
     {
-      position_joint_handles_[i] = position_joint_interface_->getHandle(joint_names_[i]);
+      velocity_joint_handles_[i] = velocity_joint_interface_->getHandle(joint_names_[i]);
     }
     catch (const hardware_interface::HardwareInterfaceException& e)
     {
@@ -44,6 +44,8 @@ bool EtaslController::init(hardware_interface::RobotHW* robot_hardware, ros::Nod
       return false;
     }
   }
+
+  configurePubsSrvs(node_handle);
 
   if (!configureInput(node_handle))
   {
@@ -71,7 +73,7 @@ void EtaslController::starting(const ros::Time& /* time */)
 {
   for (size_t i = 0; i < n_joints_; ++i)
   {
-    joint_position_map_[joint_names_[i]] = position_joint_handles_[i].getPosition();
+    joint_position_map_[joint_names_[i]] = velocity_joint_handles_[i].getPosition();
   }
 
   DoubleMap converged_values_map;
@@ -89,22 +91,82 @@ void EtaslController::update(const ros::Time& /*time*/, const ros::Duration& per
   // Read joint positions from hardware interface
   for (size_t i = 0; i < n_joints_; ++i)
   {
-    joint_position_map_[joint_names_[i]] = position_joint_handles_[i].getPosition();
+    joint_position_map_[joint_names_[i]] = velocity_joint_handles_[i].getPosition();
+    joint_velocity_map_[joint_names_[i]] = velocity_joint_handles_[i].getVelocity();
   }
   etasl_->setJointPos(joint_position_map_);
+  //etasl_->setInputVelocity(joint_velocity_map_);
 
   // Solve the optimization problem
   etasl_->updateStep(period.toSec());
 
-  // Set the desired joint positions
-  etasl_->getJointPos(joint_position_map_);
+  // Set the desired joint positions and velocities
+  //etasl_->getJointPos(joint_position_map_);
+  etasl_->getJointVel(joint_velocity_map_);
   for (size_t i = 0; i < n_joints_; ++i)
   {
-    position_joint_handles_[i].setCommand(joint_position_map_[joint_names_[i]]);
+    velocity_joint_handles_[i].setCommand(joint_velocity_map_[joint_names_[i]]);
   }
 
   // Write to output channels
   setOutput();
+
+  // If monitor is activated, activate_cmd(monitor.argument)
+  newTask();
+
+  // Continously print context to terminal
+  if (print_ctx_)
+  {
+    etasl_->readTaskSpecificationString("print(ctx)");
+  }
+}
+
+void EtaslController::newTask()
+{
+  if (etasl_->checkFinishStatus())
+  {
+    for (size_t indx = 0; indx < etasl_->ctx_->mon_scalar.size(); ++indx)
+    {
+      MonitorScalar& m = etasl_->ctx_->mon_scalar[indx];
+      if (m.active)
+      {
+        double value = m.expr->value();
+        if ((value < m.lower) || (m.upper < value)) 
+        {
+          this->stopRequest(ros::Time::now());
+          etasl_->activate_cmd(m.argument);
+          if (event_realtime_pubs_->trylock())
+          {
+            event_realtime_pubs_->msg_.data = m.name;
+            event_realtime_pubs_->unlockAndPublish();
+          }
+          this->startRequest(ros::Time::now());
+          break;
+        }
+      }
+    }
+  }
+}
+
+void EtaslController::configurePubsSrvs(ros::NodeHandle& node_handle)
+{
+  event_realtime_pubs_ =
+      boost::make_shared<realtime_tools::RealtimePublisher<std_msgs::String>>(node_handle, "e_event", 3);
+  activate_cmd_service_ = node_handle.advertiseService("activate_cmd", &EtaslController::activate_cmd_srv, this);
+  if (!ros::param::get("/print_ctx", print_ctx_))
+  {
+    print_ctx_ = false;
+  }
+}
+
+bool EtaslController::activate_cmd_srv(etasl_ros_control_msgs::Command::Request& req,
+                                       etasl_ros_control_msgs::Command::Response& res)
+{
+  this->stopRequest(ros::Time::now());
+  etasl_->activate_cmd(req.command);
+  this->startRequest(ros::Time::now());
+  res.ok = true;
+  return true;
 }
 
 bool EtaslController::configureInput(ros::NodeHandle& node_handle)
@@ -139,7 +201,7 @@ bool EtaslController::configureInput(ros::NodeHandle& node_handle)
         auto input_buffer = boost::make_shared<realtime_tools::RealtimeBuffer<geometry_msgs::Point>>();
         boost::function<void(const geometry_msgs::PointConstPtr&)> callback =
             [input_buffer](const geometry_msgs::PointConstPtr& msg) { input_buffer->writeFromNonRT(*msg); };
-        subs_.push_back(node_handle.subscribe<geometry_msgs::Pose>(input_names_[i], 1, callback));
+        subs_.push_back(node_handle.subscribe<geometry_msgs::Point>(input_names_[i], 1, callback));
         vector_input_buffers_.push_back(input_buffer);
         ++n_vector_inputs_;
       }
@@ -175,6 +237,17 @@ bool EtaslController::configureInput(ros::NodeHandle& node_handle)
         subs_.push_back(node_handle.subscribe<geometry_msgs::Twist>(input_names_[i], 1, callback));
         twist_input_buffers_.push_back(input_buffer);
         ++n_twist_inputs_;
+      }
+      else if (input_types_[i] == "Wrench")
+      {
+        ROS_INFO_STREAM("EtaslController: Adding input channel \"" << input_names_[i] << "\" of type \"Wrench\"");
+        wrench_input_names_.push_back(input_names_[i]);
+        auto input_buffer = boost::make_shared<realtime_tools::RealtimeBuffer<geometry_msgs::Wrench>>();
+        boost::function<void(const geometry_msgs::WrenchConstPtr&)> callback =
+            [input_buffer](const geometry_msgs::WrenchConstPtr& msg) { input_buffer->writeFromNonRT(*msg); };
+        subs_.push_back(node_handle.subscribe<geometry_msgs::Wrench>(input_names_[i], 1, callback));
+        wrench_input_buffers_.push_back(input_buffer);
+        ++n_wrench_inputs_;
       }
       else
       {
@@ -245,6 +318,17 @@ void EtaslController::getInput()
     }
     etasl_->setInput(twist_input_map_);
   }
+
+  if (n_wrench_inputs_ > 0)
+  {
+    for (size_t i = 0; i < n_wrench_inputs_; i++)
+    {
+      Wrench wrench;
+      tf::wrenchMsgToKDL(*wrench_input_buffers_[i]->readFromRT(), wrench);
+      wrench_input_map_["global." + wrench_input_names_[i]] = wrench;
+    }
+    etasl_->setInput(wrench_input_map_);
+  }
 }
 
 bool EtaslController::configureOutput(ros::NodeHandle& node_handle)
@@ -302,6 +386,14 @@ bool EtaslController::configureOutput(ros::NodeHandle& node_handle)
         twist_realtime_pubs_.push_back(boost::make_shared<realtime_tools::RealtimePublisher<geometry_msgs::Twist>>(
             node_handle, output_names_[i], 4));
         ++n_twist_outputs_;
+      }
+      else if (output_types_[i] == "Wrench")
+      {
+        ROS_INFO_STREAM("EtaslController: Adding output channel \"" << output_names_[i] << "\" of type \"Wrench\"");
+        wrench_output_names_.push_back(output_names_[i]);
+        wrench_realtime_pubs_.push_back(boost::make_shared<realtime_tools::RealtimePublisher<geometry_msgs::Wrench>>(
+            node_handle, output_names_[i], 4));
+        ++n_wrench_outputs_;
       }
       else
       {
@@ -383,6 +475,20 @@ void EtaslController::setOutput()
         Twist twist = twist_output_map_["global." + twist_output_names_[i]];
         tf::twistKDLToMsg(twist, twist_realtime_pubs_[i]->msg_);
         twist_realtime_pubs_[i]->unlockAndPublish();
+      }
+    }
+  }
+
+  if (n_wrench_outputs_ > 0)
+  {
+    etasl_->getOutput(wrench_output_map_);
+    for (size_t i = 0; i < n_wrench_outputs_; i++)
+    {
+      if (wrench_realtime_pubs_[i]->trylock())
+      {
+        Wrench wrench = wrench_output_map_["global." + wrench_output_names_[i]];
+        tf::wrenchKDLToMsg(wrench, wrench_realtime_pubs_[i]->msg_);
+        wrench_realtime_pubs_[i]->unlockAndPublish();
       }
     }
   }

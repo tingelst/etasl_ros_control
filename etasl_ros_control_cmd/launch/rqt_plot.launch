@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<launch>
+    <node name="rqt_vel" pkg="rqt_gui" type="rqt_gui" respawn="false" 
+    output="screen" args="--perspective-file $(find etasl_ros_control_cmd)/config/rqt_vel.perspective"/>
+    <node name="rqt_wrench" pkg="rqt_gui" type="rqt_gui" respawn="false" 
+    output="screen" args="--perspective-file $(find etasl_ros_control_cmd)/config/rqt_wrench.perspective"/>
+</launch>

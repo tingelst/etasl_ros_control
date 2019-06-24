@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<launch>
+    <arg name="connected" default="false"/><!-- Are gripper and force sensor connected? -->
+    <arg name="speed" default="1.0"/><!-- Mulitplier for K in eTaSL (K*speed) -->
+    <param name="connection" value="$(arg connected)"/>
+    <!-- Robot states -->
+    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"/>
+    <!-- Visualization -->
+    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find kuka_lab_setup)/config/zero_state_robotiq.rviz" required="true"/>  
+    <node name="smach_viz" pkg="smach_viewer" type="smach_viewer.py" required="true"/>
+    <!-- Peg-In-Hole task specific nodes -->
+    <node name="gripper_controller" pkg="robotiq_2f_gripper_control" type="Robotiq2FGripperTcpNode.py" args="192.168.250.11" required="true" if="$(arg connected)"/>
+    <node name="netft_publisher" pkg="netft_control" type="netft_node" args="--rate 250 --wrench --address 192.168.1.13" required="true"  if="$(arg connected)">
+        <remap from="netft_data" to="etasl_controller_cmd/netft_data"/>
+    </node>
+    <node name="zivid_publisher" pkg="etasl_ros_control_cmd" type="zivid_publisher.py" required="true"/>
+    <node name="etasl_pose_publisher" pkg="etasl_ros_control_cmd" type="etasl_pose_publisher.py" required="true"/>
+    <node name="speed_pub" pkg="etasl_ros_control_cmd" type="speed_pub.py" required="true"> 
+        <param name="gain_multiplier" value="$(arg speed)"/>
+    </node>
+    <node name="wrench_publisher" pkg="etasl_ros_control_examples" type="force_publisher.py" required="true" unless="$(arg connected)">
+        <remap from="/etasl_controller_lissajous/netft_data" to="/etasl_controller_cmd/netft_data"/>
+    </node>
+    <!-- State Machine -->
+    <node name="smach_peg" pkg="etasl_ros_control_cmd" type="smach_task.py" required="true"/>
+</launch>

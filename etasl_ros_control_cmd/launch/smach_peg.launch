@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<launch>
+    <arg name="connected" default="false"/><!-- Are gripper and force sensor connected? -->
+    <arg name="sim" default="true"/><!-- Are you running the physical robot? -->
+    <arg name="speed" default="1.0"/><!-- Mulitplier for K in eTaSL (K*speed) -->
+    <arg name="plot" default="false"/><!-- Do ypu want to plot a graph of joint states? -->
+    <arg name="ctx" default="false"/><!-- Do you want to print the eTaSL context to terminal? -->
+    <param name="connection" value="$(arg connected)"/>
+    <param name="print_ctx" value="$(arg ctx)"/>
+    <!-- Robot Model -->
+    <include file="$(find kuka_lab_setup)/launch/load_kukalabsetup.launch"/>
+    <!-- Hardware -->
+    <rosparam file="$(find kuka_rsi_hw_interface)/config/controller_joint_names.yaml" command="load"/>
+    <rosparam file="$(find kuka_rsi_hw_interface)/config/joint_limits.yaml" command="load"/>
+    <rosparam file="$(find kuka_rsi_hw_interface)/test/test_params_sim.yaml" command="load" if="$(arg sim)"/>
+    <rosparam file="$(find kuka_rsi_hw_interface)/test/test_params.yaml" command="load" unless="$(arg sim)"/>
+    <node name="kuka_hardware_interface" pkg="kuka_rsi_hw_interface" type="kuka_hardware_interface_node" respawn="false" output="screen" required="true"/>
+    <!-- Controllers -->
+    <rosparam file="$(find etasl_ros_control_cmd)/config/smach_peg.yaml" command="load" subst_value="true"/>
+    <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false" output="screen" args="joint_state_controller"/>
+    <node name="controller_spawner_etasl" pkg="controller_manager" type="spawner" respawn="false" output="screen" args="--stopped etasl_controller_cmd"/>
+    <!-- Robot states -->
+    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"/>
+    <!--<node name="rqt_gui" pkg="rqt_gui" type="rqt_gui"/>-->
+    <!-- Visualization -->
+    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find kuka_lab_setup)/config/zero_state_robotiq.rviz" required="true"/>
+    <node name="kuka_rsi_simulator" pkg="kuka_rsi_simulator" type="kuka_rsi_simulator" args="129.241.65.242 49152" if="$(arg sim)"/>    
+    <node name="smach_viz" pkg="smach_viewer" type="smach_viewer.py" required="true"/>
+    <!-- Peg-In-Hole task specific nodes -->
+    <node name="gripper_controller" pkg="robotiq_2f_gripper_control" type="Robotiq2FGripperTcpNode.py" args="192.168.250.11" required="true" if="$(arg connected)"/>
+    <node name="netft_publisher" pkg="netft_control" type="netft_node" args="--rate 250 --wrench --address 192.168.1.13" required="true"  if="$(arg connected)">
+        <remap from="netft_data" to="etasl_controller_cmd/netft_data"/>
+    </node>
+    <node name="zivid_publisher" pkg="etasl_ros_control_cmd" type="zivid_publisher.py" required="true"/>
+    <node name="etasl_pose_publisher" pkg="etasl_ros_control_cmd" type="etasl_pose_publisher.py" required="true"/>
+    <node name="speed_pub" pkg="etasl_ros_control_cmd" type="speed_pub.py" required="true"> 
+        <param name="gain_multiplier" value="$(arg speed)"/>
+    </node>
+    <!-- State Machine -->
+    <node name="smach_peg" pkg="etasl_ros_control_cmd" type="smach_task.py" required="true"/>
+
+    <node name="wrench_publisher" pkg="etasl_ros_control_examples" type="force_publisher.py" required="true" unless="$(arg connected)">
+        <remap from="/etasl_controller_lissajous/netft_data" to="/etasl_controller_cmd/netft_data"/>
+    </node>
+</launch>

@@ -14,6 +14,7 @@
 
   <build_depend>message_generation</build_depend>
   <build_depend>eigen</build_depend>
+  <build_depend>bullet</build_depend>
 
   <build_export_depend>message_runtime</build_export_depend>
 
@@ -21,15 +22,18 @@
   <depend>dynamic_reconfigure</depend>
   <depend>kdl_conversions</depend>
   <depend>geometry_msgs</depend>
+  <depend>std_msgs</depend>
   <depend>hardware_interface</depend>
   <depend>pluginlib</depend>
   <depend>realtime_tools</depend>
   <depend>roscpp</depend>
-
+  <depend>etasl_ros_control_msgs</depend>
+  <depend>expressiongraph_tf</depend>
   <depend>expressiongraph_lua</depend>
   <depend>expressiongraph_context</depend>
   <depend>expressiongraph_context_lua</depend>
   <depend>expressiongraph_solver_qpoases</depend>
+  <depend>expressiongraph_collision</depend>
 
   <exec_depend>message_runtime</exec_depend>
 

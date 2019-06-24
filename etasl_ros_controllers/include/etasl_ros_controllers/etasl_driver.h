@@ -22,9 +22,11 @@
 #include <expressiongraph/qpoases_solver.hpp>
 #include <expressiongraph/context_scripting.hpp>
 #include <expressiongraph/defaultobserver.hpp>
+#include <expressiongraph/groupingobserver.hpp>
 #include <expressiongraph/outputs_ros_lines.hpp>
 
 #include <ros/ros.h>
+#include <std_msgs/String.h>
 
 using namespace KDL;
 
@@ -36,13 +38,13 @@ typedef std::vector<std::string> StringVector;
 using VectorMap = std::map<std::string, Vector>;
 using RotationMap = std::map<std::string, Rotation>;
 using TwistMap = std::map<std::string, Twist>;
+using WrenchMap = std::map<std::string, Wrench>;
 
 class EtaslDriver
 {
   boost::shared_ptr<qpOASESSolver> solver_;
   bool etaslread;
   bool initialized_;
-  boost::shared_ptr<Context> ctx_;
   boost::shared_ptr<LuaContext> lua;
   boost::shared_ptr<Observer> obs_;
   boost::shared_ptr<OutputGenerator> out_;
@@ -73,6 +75,8 @@ class EtaslDriver
                                   double convergence_crit);
 
 public:
+
+  boost::shared_ptr<Context> ctx_;
   /**
    * eTaSLCppDriver constructor
    *
@@ -99,6 +103,7 @@ public:
   int setInput(const RotationMap& rmap);
   int setInput(const VectorMap& fmap);
   int setInput(const TwistMap& tmap);
+  int setInput(const WrenchMap& wmap);
 
   /**
    * sets all (scalar) variables with the velocity specified in the map as input variable
@@ -169,6 +174,7 @@ public:
   void getOutput(RotationMap& rmap);
   void getOutput(FrameMap& fmap);
   void getOutput(TwistMap& tmap);
+  void getOutput(WrenchMap& wmap);
 
   /**
    * reads a task specification file and configures the controller accordingly.
@@ -181,6 +187,12 @@ public:
    * can throw a LuaException()
    */
   void readTaskSpecificationString(const std::string& taskspec);
+
+  /**
+   * reads commands for activation/deactivation of constraints 
+   * and configures the controller accordingly.
+   */
+  void activate_cmd(const std::string& command);
 
   /**
    * Performs the following tasks in this order:

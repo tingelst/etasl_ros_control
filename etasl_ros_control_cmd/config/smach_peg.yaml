@@ -1,0 +1,55 @@
+#Publish all joint states
+joint_state_controller:
+  type: joint_state_controller/JointStateController
+  publish_rate: 50
+  extra_joints:
+    - name: 'finger_joint'
+      position: 0.65
+
+# eTaSl example controller
+etasl_controller_cmd:
+  type: "etasl_ros_controllers/EtaslController"
+  joints:
+    - joint_a1
+    - joint_a2
+    - joint_a3
+    - joint_a4
+    - joint_a5
+    - joint_a6
+  input:
+    names:
+      - "speed"
+      - "peg1_frame"
+      - "peg2_frame"
+      - "peg3_frame"
+      - "peg4_frame"
+      - "peg5_frame"
+      - "block_frame"
+      - "netft_data"
+    types:
+      - "Scalar"
+      - "Frame"
+      - "Frame"
+      - "Frame"
+      - "Frame"
+      - "Frame"
+      - "Frame"
+      - "Wrench"
+  output:
+    names:
+      - "ee_frame"
+      - "peg_hole_1"
+      - "peg_hole_2"
+      - "peg_hole_3"
+      - "peg_hole_4"
+      - "peg_hole_5"
+      - "netft_transform"
+    types:
+      - "Frame"
+      - "Frame"
+      - "Frame"
+      - "Frame"
+      - "Frame"
+      - "Frame"
+      - "Wrench"
+  task_specification: "$(find etasl_ros_control_cmd)/scripts/peg_in_hole.lua"

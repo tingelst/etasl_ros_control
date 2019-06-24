@@ -1,0 +1,118 @@
+#Publish all joint states
+joint_state_controller:
+  type: joint_state_controller/JointStateController
+  publish_rate: 50
+  extra_joints:
+    - name: 'finger_joint'
+      position: 0.6
+
+# eTaSl example controller
+etasl_controller_1:
+  type: "etasl_ros_controllers/EtaslController"
+  joints:
+    - joint_a1
+    - joint_a2
+    - joint_a3
+    - joint_a4
+    - joint_a5
+    - joint_a6
+  input:
+    names:
+      - "speed"
+      - "peg_frame"
+    types:
+      - "Scalar"
+      - "Frame"
+  task_specification: "$(find etasl_ros_control_examples)/scripts/smach_peg_1.lua"
+
+etasl_controller_2:
+  type: "etasl_ros_controllers/EtaslController"
+  joints:
+    - joint_a1
+    - joint_a2
+    - joint_a3
+    - joint_a4
+    - joint_a5
+    - joint_a6
+  input:
+    names:
+      - "speed"
+      - "peg_frame"
+    types:
+      - "Scalar"
+      - "Frame"
+  task_specification: "$(find etasl_ros_control_examples)/scripts/smach_peg_2.lua"
+
+etasl_controller_3:
+  type: "etasl_ros_controllers/EtaslController"
+  joints:
+    - joint_a1
+    - joint_a2
+    - joint_a3
+    - joint_a4
+    - joint_a5
+    - joint_a6
+  input:
+    names:
+      - "speed"
+      - "block_frame"
+    types:
+      - "Scalar"
+      - "Frame"
+  task_specification: "$(find etasl_ros_control_examples)/scripts/smach_peg_3.lua"
+
+etasl_controller_4:
+  type: "etasl_ros_controllers/EtaslController"
+  joints:
+    - joint_a1
+    - joint_a2
+    - joint_a3
+    - joint_a4
+    - joint_a5
+    - joint_a6
+  input:
+    names:
+      - "speed"
+      - "block_frame"
+    types:
+      - "Scalar"
+      - "Frame"
+  task_specification: "$(find etasl_ros_control_examples)/scripts/smach_peg_4.lua"
+
+etasl_controller_lissajous:
+  type: "etasl_ros_controllers/EtaslController"
+  joints:
+    - joint_a1
+    - joint_a2
+    - joint_a3
+    - joint_a4
+    - joint_a5
+    - joint_a6
+  input:
+    names:
+      - "speed"
+      - "tgt"
+      - "block_frame"
+      - "netft_data"
+    types:
+      - "Scalar"
+      - "Vector"
+      - "Frame"
+      - "Wrench"
+  task_specification: "$(find etasl_ros_control_examples)/scripts/smach_peg_lissajous.lua"
+
+etasl_controller_home:
+  type: "etasl_ros_controllers/EtaslController"
+  joints:
+    - joint_a1
+    - joint_a2
+    - joint_a3
+    - joint_a4
+    - joint_a5
+    - joint_a6
+  input:
+    names:
+      - "speed"
+    types:
+      - "Scalar"
+  task_specification: "$(find etasl_ros_control_examples)/scripts/smach_peg_home.lua"
