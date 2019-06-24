@@ -53,11 +53,11 @@
 - git:
     local-name: executive_smach
     uri: https://github.com/ros/executive_smach.git
-    version: kinetic-devel
+    version: indigo-devel
 - git:
     local-name: executive_smach_visualization
     uri: https://github.com/ros-visualization/executive_smach_visualization.git
-    version: kinetic-devel
+    version: indigo-devel
 - git:
     local-name: robotiq
     uri: https://github.com/ros-industrial/robotiq.git
