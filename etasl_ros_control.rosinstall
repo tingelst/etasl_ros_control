@@ -1,7 +1,7 @@
 - git:
     local-name: etasl_ros_control
-    uri: https://github.com/tingelst/etasl_ros_control.git
-    version: master
+    uri: https://github.com/daglofthus/etasl_ros_control.git
+    version: develope
 - git:
     local-name: expressiongraph
     uri: https://github.com/eaertbel/expressiongraph.git
@@ -48,5 +48,33 @@
     version: f4e309fd
 - git:
     local-name: kuka_experimental
-    uri: https://github.com/ros-industrial/kuka_experimental.git
+    uri: https://github.com/ra-mtp-ntnu/kuka_experimental.git
+    version: velocity-interface
+-git:
+    local-name: executive_smach
+    uri: https://github.com/ros/executive_smach.git
     version: indigo-devel
+-git:
+    local-name: executive_smach_visualization
+    uri: https://github.com/ros-visualization/executive_smach_visualization.git
+    version: indigo-devel
+-git:
+    local-name: robotiq
+    uri: https://github.com/ros-industrial/robotiq.git
+    version: indigo-devel
+-git:
+    local-name: netft
+    uri: https://github.com/fsuarez6/netft.git
+    version: master
+-git:
+    local-name: kuka_lab_setup
+    uri: https://github.com/daglofthus/kuka_lab_setup.git
+    version: master
+-git:
+    local-name: forcesensor
+    uri: https://github.com/daglofthus/forcesensor.git
+    version: master
+-git:
+    local-name: workspace
+    uri: https://github.com/daglofthus/workspace.git
+    version: master
