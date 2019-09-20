@@ -36,6 +36,7 @@ typedef std::vector<std::string> StringVector;
 using VectorMap = std::map<std::string, Vector>;
 using RotationMap = std::map<std::string, Rotation>;
 using TwistMap = std::map<std::string, Twist>;
+using WrenchMap = std::map<std::string, Wrench>;
 
 class EtaslDriver
 {
@@ -99,6 +100,7 @@ public:
   int setInput(const RotationMap& rmap);
   int setInput(const VectorMap& fmap);
   int setInput(const TwistMap& tmap);
+  int setInput(const WrenchMap& tmap);
 
   /**
    * sets all (scalar) variables with the velocity specified in the map as input variable

@@ -178,14 +178,14 @@ bool EtaslController::configureInput(ros::NodeHandle& node_handle)
       }
       else if (input_types_[i] == "Wrench")
       {
-	ROS_INFO_STREAM("EtaslController: Adding input channel \"" << input_names_[i] << "\" of type \"Twist\"");
-	wrench_input_names_.push_back(input_names_[i]);
-	auto input_buffer = boost::make_shared<realtime_tools::RealtimeBuffer<geometry_msgs::Wrench>>();
-	boost::function<void(const geometry_msgs::WrenchConstPtr&)> callback =
-	  [input_buffer](const geometry_msgs::WrenchConstPtr& msg) { input_buffer->writeFromNonRT(*msg); };
-	subs_.push_back(node-handle.subscribe<geometry_msgs::Wrench>(input_names_[i], 1, callback));
-	wrench_input_buffers_.push_back(input_buffer);
-	++n_wrench_inputs_;
+	      ROS_INFO_STREAM("EtaslController: Adding input channel \"" << input_names_[i] << "\" of type \"Twist\"");
+	      wrench_input_names_.push_back(input_names_[i]);
+	      auto input_buffer = boost::make_shared<realtime_tools::RealtimeBuffer<geometry_msgs::Wrench>>();
+	      boost::function<void(const geometry_msgs::WrenchConstPtr&)> callback =
+	          [input_buffer](const geometry_msgs::WrenchConstPtr& msg) { input_buffer->writeFromNonRT(*msg); };
+	      subs_.push_back(node_handle.subscribe<geometry_msgs::Wrench>(input_names_[i], 1, callback));
+	      wrench_input_buffers_.push_back(input_buffer);
+	      ++n_wrench_inputs_;
       }
       else
       {
@@ -262,7 +262,7 @@ void EtaslController::getInput()
     {
       Wrench wrench;
       tf::wrenchMsgToKDL(*wrench_input_buffers_[i]->readFromRT(), wrench);
-      wrench_input_map["global." + wrench_input_names_[i]] = wrench;
+      wrench_input_map_["global." + wrench_input_names_[i]] = wrench;
     }
     etasl_->setInput(wrench_input_map_);
   }
