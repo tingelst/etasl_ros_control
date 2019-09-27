@@ -49,7 +49,7 @@ catkin_make --cmake-args -DCMAKE_BUILD_TYPE=Release
 ### Source the catkin workspace
 Setup your environment - you can do this every time you work with this particular source install of the code, or you can add this to your `.bashrc` (recommended):
 ```bash
-source ~/etasl_ws/devel/setup.bash # or .zsh, depending on your shell
+source ~/etasl_ros_control_ws/devel/setup.bash # or .zsh, depending on your shell
 ```
 
 ## Getting started
