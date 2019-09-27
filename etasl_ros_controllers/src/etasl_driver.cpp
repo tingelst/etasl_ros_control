@@ -154,6 +154,23 @@ int EtaslDriver::setInput(const TwistMap& tmap)
   return 0;
 }
 
+int EtaslDriver::setInput(const WrenchMap& tmap)
+{
+  for (auto item : tmap)
+  {
+    auto v = ctx_->getInputChannel<Wrench>(item.first);
+    if (v)
+    {
+      v->setValue(item.second);
+    }
+    else
+    {
+      return -1;
+    }
+  }
+  return 0;
+}
+
 int EtaslDriver::setInput(const VectorMap& vmap)
 {
   for (auto item : vmap)

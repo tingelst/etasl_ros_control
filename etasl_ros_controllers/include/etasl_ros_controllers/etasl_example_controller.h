@@ -38,6 +38,7 @@ using FrameMap = std::map<std::string, Frame>;
 using VectorMap = std::map<std::string, Vector>;
 using RotationMap = std::map<std::string, Rotation>;
 using TwistMap = std::map<std::string, Twist>;
+using WrenchMap = std::map<std::string, Wrench>;
 
 class EtaslController
   : public controller_interface::MultiInterfaceController<hardware_interface::PositionJointInterface>
@@ -93,6 +94,11 @@ private:
   size_t n_twist_inputs_{};
   std::vector<std::string> twist_input_names_;
   std::vector<boost::shared_ptr<realtime_tools::RealtimeBuffer<geometry_msgs::Twist>>> twist_input_buffers_;
+
+  WrenchMap wrench_input_map_;
+  size_t n_wrench_inputs_{};
+  std::vector<std::string> wrench_input_names_;
+  std::vector<boost::shared_ptr<realtime_tools::RealtimeBuffer<geometry_msgs::Wrench>>> wrench_input_buffers_;
 
   // Outputs
   DoubleMap output_map_;
