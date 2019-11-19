@@ -100,7 +100,7 @@ public:
   int setInput(const RotationMap& rmap);
   int setInput(const VectorMap& fmap);
   int setInput(const TwistMap& tmap);
-  int setInput(const WrenchMap& tmap);
+  int setInput(const WrenchMap& wmap);
 
   /**
    * sets all (scalar) variables with the velocity specified in the map as input variable
@@ -171,6 +171,7 @@ public:
   void getOutput(RotationMap& rmap);
   void getOutput(FrameMap& fmap);
   void getOutput(TwistMap& tmap);
+  void getOutput(WrenchMap& wmap);
 
   /**
    * reads a task specification file and configures the controller accordingly.
