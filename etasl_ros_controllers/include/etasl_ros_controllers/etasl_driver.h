@@ -43,7 +43,6 @@ class EtaslDriver
   boost::shared_ptr<qpOASESSolver> solver_;
   bool etaslread;
   bool initialized_;
-  boost::shared_ptr<Context> ctx_;
   boost::shared_ptr<LuaContext> lua;
   boost::shared_ptr<Observer> obs_;
   boost::shared_ptr<OutputGenerator> out_;
@@ -74,6 +73,7 @@ class EtaslDriver
                                   double convergence_crit);
 
 public:
+  boost::shared_ptr<Context> ctx_;
   /**
    * eTaSLCppDriver constructor
    *

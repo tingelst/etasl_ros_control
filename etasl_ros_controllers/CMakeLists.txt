@@ -14,6 +14,7 @@ find_package(catkin REQUIRED COMPONENTS
   dynamic_reconfigure
   kdl_conversions
   geometry_msgs
+  std_msgs
   hardware_interface
   message_generation
   pluginlib
@@ -44,6 +45,7 @@ catkin_package(
     dynamic_reconfigure
     kdl_conversions
     geometry_msgs
+    std_msgs
     hardware_interface
     message_runtime
     pluginlib
@@ -54,6 +56,7 @@ catkin_package(
 add_library(etasl_ros_controllers
   src/etasl_driver.cpp
   src/etasl_example_controller.cpp
+  src/topic_observer.cpp
 )
 
 # add_dependencies(franka_example_controllers

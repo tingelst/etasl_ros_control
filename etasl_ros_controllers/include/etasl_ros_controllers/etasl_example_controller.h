@@ -29,6 +29,7 @@
 #include <expressiongraph/context_scripting.hpp>
 
 #include <etasl_ros_controllers/etasl_driver.h>
+#include <etasl_ros_controllers/topic_observer.h>
 
 using namespace KDL;
 
@@ -130,6 +131,8 @@ private:
   TwistMap twist_output_map_;
   size_t n_twist_outputs_{};
   std::vector<boost::shared_ptr<realtime_tools::RealtimePublisher<geometry_msgs::Twist>>> twist_realtime_pubs_;
+
+  boost::shared_ptr<realtime_tools::RealtimePublisher<std_msgs::String>> event_pub_p_;
 
   std::string task_specification_;
   boost::shared_ptr<EtaslDriver> etasl_;

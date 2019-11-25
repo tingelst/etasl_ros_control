@@ -61,6 +61,11 @@ bool EtaslController::init(hardware_interface::RobotHW* robot_hardware, ros::Nod
     return false;
   }
   etasl_ = boost::make_shared<EtaslDriver>(300, 0.0, 0.0001);
+  // Setup event publisher
+  event_pub_p_ = boost::make_shared<realtime_tools::RealtimePublisher<std_msgs::String>>(node_handle, "event", 1);
+  Observer::Ptr obs = create_topic_observer(etasl_->ctx_, event_pub_p_, "exit", "", true);
+  obs = create_topic_observer(etasl_->ctx_, event_pub_p_, "event", "", false, obs);
+  etasl_->ctx_->addDefaultObserver(obs);
   etasl_->readTaskSpecificationFile(task_specification_);
   ROS_INFO_STREAM("EtaslController: Loaded task specification from \"" << task_specification_ << "\"");
 
@@ -94,13 +99,14 @@ void EtaslController::update(const ros::Time& /*time*/, const ros::Duration& per
   etasl_->setJointPos(joint_position_map_);
 
   // Solve the optimization problem
-  etasl_->updateStep(period.toSec());
-
-  // Set the desired joint positions
-  etasl_->getJointPos(joint_position_map_);
-  for (size_t i = 0; i < n_joints_; ++i)
-  {
-    position_joint_handles_[i].setCommand(joint_position_map_[joint_names_[i]]);
+  int retval = etasl_->updateStep(period.toSec());
+  if (retval == 0){
+    // Set the desired joint positions
+    etasl_->getJointPos(joint_position_map_);
+    for (size_t i = 0; i < n_joints_; ++i)
+    {
+      position_joint_handles_[i].setCommand(joint_position_map_[joint_names_[i]]);
+    }
   }
 
   // Write to output channels
